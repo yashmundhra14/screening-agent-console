@@ -1,0 +1,1346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Screening Agent console for frontline hiring: screening, interview booking, recruiter review, candidate requests, fairness checks and audit records.">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Screening Agent Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: operations console. A left rail lists the workflow stages in order, the working area sits on the right. On phones the rail becomes a scrolling strip at the top. */
+:root{
+  --bg:#F2F3EF; --surface:#FFFFFF; --surface-2:#E9ECE6; --ink:#16201C; --ink-2:#47534D; --ink-3:#6E7973; --line:#D7DCD4;
+  --accent:#1E5A46; --accent-ink:#FFFFFF; --accent-soft:#DCEAE2;
+  --good:#2B7A4B; --good-soft:#DDEFE2; --warn:#8F5A05; --warn-soft:#F5E7C8; --bad:#B0382B; --bad-soft:#F6DED9; --info:#2D5A8C; --info-soft:#DDE7F2;
+  --chat:#E7E2D7; --b-in:#FFFFFF; --b-out:#D5ECCB; --shadow:0 1px 2px rgba(20,30,25,.06),0 6px 24px rgba(20,30,25,.08);
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif; --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101513; --surface:#171E1B; --surface-2:#202925; --ink:#E4EAE6; --ink-2:#A9B4AE; --ink-3:#85918B; --line:#2D3833;
+  --accent:#72C2A1; --accent-ink:#0C1914; --accent-soft:#1B3A2E;
+  --good:#79C996; --good-soft:#18331F; --warn:#E2AE4E; --warn-soft:#3A2D12; --bad:#EF8676; --bad-soft:#3F1F1A; --info:#8FB7E6; --info-soft:#1A2A3D;
+  --chat:#1A201D; --b-in:#26302B; --b-out:#22412F; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101513; --surface:#171E1B; --surface-2:#202925; --ink:#E4EAE6; --ink-2:#A9B4AE; --ink-3:#85918B; --line:#2D3833;
+  --accent:#72C2A1; --accent-ink:#0C1914; --accent-soft:#1B3A2E;
+  --good:#79C996; --good-soft:#18331F; --warn:#E2AE4E; --warn-soft:#3A2D12; --bad:#EF8676; --bad-soft:#3F1F1A; --info:#8FB7E6; --info-soft:#1A2A3D;
+  --chat:#1A201D; --b-in:#26302B; --b-out:#22412F; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:26px;font-weight:700}
+h2{font-size:17px;font-weight:600}
+h3{font-size:14px;font-weight:600}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.muted{color:var(--ink-2)}
+.faint{color:var(--ink-3)}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);gap:20px;max-width:1440px;margin:0 auto}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;display:flex;flex-direction:column;gap:16px}
+.brand{display:flex;gap:10px;align-items:center;padding:4px 6px}
+.mark{width:34px;height:34px;border-radius:8px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:15px;flex:none}
+.brand b{font-family:var(--f-display);font-size:15px;display:block;line-height:1.2}
+.brand span{font-size:12px;color:var(--ink-3)}
+nav.steps{display:flex;flex-direction:column;gap:2px}
+nav.steps a{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;color:var(--ink-2);text-decoration:none;font-weight:500}
+nav.steps a .ix{font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
+nav.steps a:hover{background:var(--surface-2);color:var(--ink)}
+nav.steps a[aria-current="page"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+nav.steps a[aria-current="page"] .ix{color:var(--accent)}
+.badge{font-size:11px;font-weight:600;background:var(--warn-soft);color:var(--warn);border-radius:20px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.rail .ws{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12.5px}
+.main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.top .grp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.clock{font-family:var(--f-mono);font-size:12.5px;background:var(--surface-2);padding:4px 8px;border-radius:6px}
+.chip-sample{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border:1px dashed var(--ink-3);color:var(--ink-2);padding:2px 8px;border-radius:20px}
+select,input[type=text],input[type=number],textarea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+textarea{width:100%;resize:vertical}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn-pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-pri:hover{filter:brightness(1.08);border-color:var(--accent)}
+.btn-bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.btn-sm{padding:3px 9px;font-size:12.5px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.page-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px 16px}
+.page-h p{max-width:72ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:flex;flex-direction:column;gap:12px}
+.card-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 12px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi .v{font-family:var(--f-display);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi .l{font-size:12px;color:var(--ink-2)}
+.kpi .s{font-size:11.5px;color:var(--ink-3)}
+.tbl-wrap{overflow-x:auto;margin:0 -4px}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr.click{cursor:pointer}
+.tbl tr.click:hover td{background:var(--surface-2)}
+.tbl td.r,.tbl th.r{text-align:right}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;background:var(--surface-2);color:var(--ink-2)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-good{background:var(--good-soft);color:var(--good)}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
+.p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-info{background:var(--info-soft);color:var(--info)}
+.p-acc{background:var(--accent-soft);color:var(--accent)}
+.sbar{display:flex;align-items:center;gap:8px;min-width:120px}
+.sbar .t{flex:1;height:6px;background:var(--surface-2);border-radius:4px;position:relative;overflow:visible}
+.sbar .f{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--accent)}
+.sbar .th{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink-3)}
+.sbar b{font-variant-numeric:tabular-nums;width:24px;text-align:right}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;padding:8px 12px;cursor:pointer;color:var(--ink-2);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.list{display:flex;flex-direction:column}
+.list .it{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.list .it:last-child{border-bottom:0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ink-3)}
+.dot.bad{background:var(--bad)} .dot.warn{background:var(--warn)} .dot.good{background:var(--good)} .dot.info{background:var(--info)}
+.funnel{display:flex;flex-direction:column;gap:10px}
+.funnel .row{display:grid;grid-template-columns:170px 1fr 56px;gap:10px;align-items:center}
+.funnel .bar{height:22px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.funnel .bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.funnel .row:nth-child(n+3) .bar i{background:color-mix(in srgb,var(--accent) 75%,var(--surface))}
+.flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.flow a{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink);background:var(--surface-2);border-radius:8px;padding:10px;min-width:0}
+.flow a:hover{background:var(--accent-soft)}
+.flow a .ix{font-family:var(--f-mono);font-size:11px;color:var(--accent)}
+.flow a b{font-size:13px;font-weight:600}
+.flow a span{font-size:12px;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--ink-2)}
+.chip.x{text-decoration:line-through;text-decoration-color:var(--ink-3)}
+.kv{display:grid;grid-template-columns:minmax(110px,45%) minmax(0,1fr);gap:6px 16px;font-size:13px}
+.kv dt{color:var(--ink-3)} .kv dd{margin:0;min-width:0}
+.crit{display:grid;grid-template-columns:minmax(0,1fr) 120px 48px;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.crit:last-child{border-bottom:0}
+.crit .ev{grid-column:1 / -1;font-size:12.5px;color:var(--ink-2)}
+.meter{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent)}
+.note{font-size:12.5px;color:var(--ink-2);background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.note.warn{background:var(--warn-soft);color:var(--ink)}
+.note.good{background:var(--good-soft);color:var(--ink)}
+.tl{display:flex;flex-direction:column;gap:0;border-left:2px solid var(--line);margin-left:4px}
+.tl .ev{position:relative;padding:0 0 12px 14px;font-size:13px}
+.tl .ev::before{content:"";position:absolute;left:-6px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--ink-3)}
+.tl .ev.agent::before{border-color:var(--accent)} .tl .ev.human::before{border-color:var(--info)} .tl .ev.candidate::before{border-color:var(--warn)}
+.tl .ev .w{font-size:11.5px;color:var(--ink-3)}
+.drawer-bg,.modal-bg{position:fixed;inset:0;background:rgba(10,16,13,.42);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,100%);background:var(--bg);z-index:41;overflow-y:auto;box-shadow:var(--shadow);padding:calc(env(safe-area-inset-top,0px) + 16px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 24px) 20px;display:flex;flex-direction:column;gap:14px}
+.modal{position:fixed;z-index:51;left:50%;top:50%;transform:translate(-50%,-50%);width:min(760px,calc(100% - 32px));max-height:calc(100% - 48px);overflow:auto;background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:12px}
+.modal-bg{z-index:50}
+.modal pre,.modal textarea.code{font-family:var(--f-mono);font-size:12px;background:var(--surface-2);border-radius:8px;padding:12px;max-height:56vh;overflow:auto;white-space:pre;margin:0;border:0}
+.row-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:60;font-size:13px;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+.msg-layout{display:grid;grid-template-columns:minmax(0,300px) minmax(0,380px) minmax(0,1fr);gap:16px;align-items:start}
+.conv{max-height:640px;overflow-y:auto}
+.conv .it{cursor:pointer;padding:9px 8px;border-radius:6px;grid-template-columns:1fr auto}
+.conv .it[aria-current="true"]{background:var(--accent-soft)}
+.phone{width:100%;max-width:380px;border-radius:28px;border:8px solid var(--ink);background:var(--chat);overflow:hidden;display:flex;flex-direction:column;height:640px;margin:0 auto}
+.phone .ph{background:var(--accent);color:var(--accent-ink);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.phone .ph b{font-size:14px} .phone .ph span{font-size:11.5px;opacity:.85}
+.phone .body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.bub{max-width:84%;padding:7px 10px 5px;border-radius:10px;font-size:13px;white-space:pre-wrap;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.bub.out{background:var(--b-in);align-self:flex-start;border-top-left-radius:2px}
+.bub.in{background:var(--b-out);align-self:flex-end;border-top-right-radius:2px}
+.bub .tm{display:block;text-align:right;font-size:10.5px;color:var(--ink-3);margin-top:2px}
+.phone .replies{padding:10px;background:var(--surface);display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--line)}
+.phone .replies .lab{width:100%;font-size:11px;color:var(--ink-3)}
+.status-page{background:var(--surface);flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.status-page .hero{border-radius:10px;padding:14px;background:var(--surface-2);display:flex;flex-direction:column;gap:6px}
+.status-page .bigbtn{width:100%;justify-content:center;padding:10px}
+.gate{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.gate:last-child{border-bottom:0}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.switch:last-child{border-bottom:0}
+.switch input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.switch .d{font-size:12px;color:var(--ink-3)}
+input[type=range]{accent-color:var(--accent);width:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.hbars{display:flex;flex-direction:column;gap:8px}
+.hbars .r{display:grid;grid-template-columns:110px 1fr 60px;gap:10px;align-items:center;font-size:12.5px}
+.stack{display:flex;height:18px;border-radius:4px;overflow:hidden;background:var(--surface-2)}
+.stack i{display:block;height:100%}
+.empty{padding:24px;text-align:center;color:var(--ink-3)}
+@media (max-width:1180px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.flow{grid-template-columns:repeat(4,minmax(0,1fr))}.msg-layout{grid-template-columns:minmax(0,280px) minmax(0,1fr)}.msg-layout .slots{grid-column:1 / -1}}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static;gap:10px}
+  nav.steps{flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:4px}
+  nav.steps a{grid-template-columns:auto auto auto;white-space:nowrap}
+  .rail .ws{display:none}
+  .grid2,.grid3{grid-template-columns:minmax(0,1fr)}
+  .msg-layout{grid-template-columns:minmax(0,1fr)}
+  .conv{max-height:260px}
+}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.flow{grid-template-columns:repeat(2,minmax(0,1fr))}.funnel .row{grid-template-columns:110px 1fr 48px}h1{font-size:22px}.phone{height:560px}}
+@media (prefers-reduced-motion:no-preference){.drawer{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand"><div class="mark">SA</div><div><b>Screening Agent</b><span>Recruit module</span></div></div>
+    <nav class="steps" id="nav" aria-label="Workflow"></nav>
+    <div class="ws">
+      <div class="eyebrow">Workspace</div>
+      <div><b>Kestrel Retail &amp; Logistics</b></div>
+      <div class="muted">5 open jobs · India, United States, Germany</div>
+      <div class="faint">Every rejection based on judgment is made by a person. The agent only closes applications that fail a requirement the candidate stated, where the country rules allow it.</div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <div class="grp">
+        <span class="chip-sample">Sample data</span>
+        <span class="clock" id="clock"></span>
+      </div>
+      <div class="grp">
+        <label class="faint" for="who">Signed in as</label>
+        <select id="who"></select>
+        <button class="btn btn-sm" data-act="intake" id="btn-intake">Receive 10 applications</button>
+        <button class="btn btn-sm" data-act="advance24" id="btn-adv">Advance clock 24h</button>
+        <button class="btn btn-sm" data-act="askReset">Reset workspace</button>
+      </div>
+    </header>
+    <div id="view" class="main"></div>
+  </div>
+</div>
+<div id="drawerBg" class="drawer-bg" hidden data-act="closeDrawer"></div>
+<aside id="drawer" class="drawer" hidden aria-label="Candidate detail"></aside>
+<div id="modalBg" class="modal-bg" hidden data-act="closeModal"></div>
+<div id="modal" class="modal" hidden role="dialog" aria-modal="true"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function(){
+'use strict';
+const H=3600e3, MIN=60e3, D=24*H;
+const BASE_NOW=Date.UTC(2026,10,4,9,30);
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const pad=n=>String(n).padStart(2,'0');
+const fmtT=t=>{const d=new Date(t);return `${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`};
+const fmtD=t=>{const d=new Date(t);return `${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`};
+const iso=t=>new Date(t).toISOString().replace('.000','');
+function dur(ms){ms=Math.abs(ms);if(ms<60e3)return Math.max(1,Math.round(ms/1000))+' s';if(ms<90*MIN)return Math.round(ms/MIN)+' min';if(ms<48*H)return Math.round(ms/H)+' h';return Math.round(ms/D)+' d'}
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+const $=(s,r=document)=>r.querySelector(s);
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rand=Math.random;
+const pick=a=>a[Math.floor(rand()*a.length)];
+const median=a=>{if(!a.length)return 0;const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2};
+
+const COUNTRY={IN:'India',US:'United States',DE:'Germany'};
+const AGENT='Screening agent';
+const USERS=[
+  {id:'u4',name:'Sam Okafor',role:'TA admin',country:null},
+  {id:'u1',name:'Priya Nair',role:'Recruiter, India',country:'IN'},
+  {id:'u2',name:'Jordan Reyes',role:'Recruiter, US',country:'US'},
+  {id:'u3',name:'Anna Weber',role:'Recruiter, Germany',country:'DE'},
+  {id:'u5',name:'External auditor',role:'Read-only',country:null}
+];
+const recruiterFor=co=>USERS.find(u=>u.country===co);
+
+const REQS=[
+  {id:'REQ-2611-PNQ',title:'Warehouse Associate, Picking & Packing',site:'Pune Fulfilment Centre, Chakan',city:'Pune',country:'IN',openings:120,channel:'WhatsApp',hm:'Rohan Kulkarni',kind:'warehouse',shifts:['Morning 06:00-14:00','Evening 14:00-22:00','Night 22:00-06:00'],siteLang:'Hindi, Marathi or English',n:48},
+  {id:'REQ-2611-BLR',title:'Cashier & Customer Service',site:'Whitefield Store',city:'Bengaluru',country:'IN',openings:40,channel:'WhatsApp',hm:'Lakshmi Rao',kind:'retail',shifts:['Morning 08:00-16:00','Afternoon 14:00-22:00','Weekends'],siteLang:'Kannada, Hindi or English',n:30},
+  {id:'REQ-2611-DAL',title:'Delivery Driver, Last Mile',site:'Dallas South Delivery Station',city:'Dallas, TX',country:'US',openings:45,channel:'SMS',hm:'Marcus Hill',kind:'driver',shifts:['Weekday days','Weekday evenings','Weekends'],siteLang:'English',n:36},
+  {id:'REQ-2611-NYC',title:'Store Associate',site:'Queens Center Store',city:'New York, NY',country:'US',openings:30,channel:'SMS',hm:'Dana Ortiz',kind:'retail',shifts:['Opening 06:00-14:00','Closing 14:00-23:00','Weekends'],siteLang:'English',n:30,nyc:true},
+  {id:'REQ-2611-LEJ',title:'Lagermitarbeiter (Warehouse Operative)',site:'Logistikzentrum Leipzig-Radefeld',city:'Leipzig',country:'DE',openings:60,channel:'WhatsApp',hm:'Katrin Vogel',kind:'warehouse',shifts:['Frühschicht 06-14','Spätschicht 14-22','Nachtschicht 22-06'],siteLang:'German, basic',n:40}
+];
+const CRITERIA=[
+  {key:'exp',label:'Relevant work experience',w:35},
+  {key:'shift',label:'Shift availability',w:25},
+  {key:'start',label:'Start date',w:15},
+  {key:'cert',label:'Certificates and training',w:15},
+  {key:'lang',label:'Can follow safety briefings in site language',w:10}
+];
+const KO_DEF={
+  rtw:co=>({key:'rtw',label:`Has the right to work in ${COUNTRY[co]}`,need:`has the right to work in ${COUNTRY[co]}`,needDE:'in Deutschland arbeiten dürfen'}),
+  age:()=>({key:'age',label:'Is 18 or older',need:'is 18 or older',needDE:'mindestens 18 Jahre alt sind'}),
+  shift:()=>({key:'shift',label:'Can work at least one offered shift',need:'can work at least one of the offered shifts',needDE:'mindestens eine der angebotenen Schichten arbeiten können'}),
+  licence:()=>({key:'licence',label:'Holds a valid driving licence',need:'holds a valid driving licence',needDE:'einen gültigen Führerschein besitzen'})
+};
+const EXCLUDED=['Name','Photo','Date of birth and age','Gender','Home address and postcode','Gaps in work history','School or college names','Voluntary self-ID answers','Nationality'];
+const REASONS={
+  exp:{en:'Your experience does not yet match what this role needs',de:'Ihre Berufserfahrung passt derzeit nicht zu den Anforderungen der Stelle',label:'Experience does not match the role'},
+  shift:{en:'Your available shifts do not match the shifts we are hiring for',de:'Ihre verfügbaren Schichten passen nicht zu den offenen Schichten',label:'Shift availability does not match open shifts'},
+  start:{en:'Your start date is later than this hiring wave',de:'Ihr frühester Starttermin liegt nach dieser Einstellungswelle',label:'Start date is too late for this hiring wave'},
+  filled:{en:'The roles at this location have been filled',de:'Die Stellen an diesem Standort sind bereits besetzt',label:'Roles at this location are filled'}
+};
+const NAMES={
+  IN:{f:['Aarav','Priya','Rahul','Sneha','Vikram','Anjali','Rohit','Pooja','Arjun','Kavya','Sanjay','Neha','Imran','Fatima','Suresh','Meena','Deepak','Asha','Kiran','Manoj','Ritu','Ganesh','Sunita','Amit','Farhan','Lalitha'],l:['Sharma','Patil','Deshmukh','Iyer','Khan','Reddy','Nair','Gupta','Shaikh','Jadhav','Pawar','Kumar','Rao','Joshi','Singh','Das','Gowda','Naik']},
+  US:{f:['James','Maria','DeShawn','Emily','Luis','Ashley','Tyrone','Jessica','Carlos','Brittany','Kevin','Aaliyah','Jose','Megan','Andre','Sofia','Brian','Keisha','Daniel','Rosa','Hector','Tamika'],l:['Johnson','Garcia','Williams','Martinez','Brown','Davis','Rodriguez','Wilson','Lopez','Jackson','Thompson','Nguyen','Harris','Ramirez','Lee','Walker','Robinson']},
+  DE:{f:['Lukas','Anna','Leon','Marie','Jonas','Sophie','Mehmet','Laura','Felix','Elif','Paul','Lena','Tim','Ayse','Max','Julia','Dmytro','Olena','Kevin','Sandra'],l:['Müller','Schmidt','Schneider','Fischer','Weber','Wagner','Becker','Yilmaz','Hoffmann','Koch','Richter','Kaya','Bauer','Kowalski','Schulz','Lange']}
+};
+const EXP={
+  warehouse:{
+    direct:[m=>`${m} months as a picker and packer at an e-commerce fulfilment centre`,m=>`${m} months loading and unloading trucks at a parcel sorting hub`,m=>`${m} months on inventory counts and put-away at a third-party logistics warehouse`],
+    adjacent:[m=>`${m} months as a shelf stacker at a supermarket`,m=>`${m} months as a delivery helper with a local courier`],
+    transferable:[y=>`Ran the stockroom of my family's grocery shop for ${y} years. Received stock from distributors, kept counts, checked expiry dates`,y=>`${y} years in an army supply depot, issuing and storing equipment`,y=>`Volunteer at a food bank warehouse for ${y} years, sorting and packing donations`],
+    none:[()=>`No previous paid work. Finished school this year and looking for full-time work`]
+  },
+  retail:{
+    direct:[m=>`${m} months as a cashier at a hypermarket`,m=>`${m} months in customer service at a mobile phone store`,m=>`${m} months as a sales associate at a clothing store`],
+    adjacent:[m=>`${m} months as a waiter at a busy restaurant`,m=>`${m} months on a call centre help desk`],
+    transferable:[y=>`Helped run my family's tea stall for ${y} years, handling cash and regular customers`,y=>`${y} years organising the weekly market stall for our community group, handling sales and stock`],
+    none:[()=>`Student, no paid work yet. Available for full shifts`]
+  },
+  driver:{
+    direct:[m=>`${m} months delivering parcels for a regional courier, 120 or more stops a day`,m=>`${m} months as a route driver for a food distributor`],
+    adjacent:[m=>`${m} months doing app-based food delivery with my own car`,m=>`${m} months as a warehouse loader at a parcel hub`],
+    transferable:[y=>`${y} years driving a tow truck for my uncle's business`,y=>`Drove the shuttle van for our church and senior center for ${y} years`],
+    none:[()=>`No previous work experience. Have had my licence for two years`]
+  }
+};
+const EXP_DE={
+  direct:[m=>[`${m} Monate Kommissionierer bei einem Online-Händler`,`${m} months as an order picker for an online retailer`],m=>[`${m} Monate im Wareneingang eines Paketzentrums`,`${m} months in goods receiving at a parcel centre`]],
+  adjacent:[m=>[`${m} Monate Verkäufer im Supermarkt, Regale auffüllen`,`${m} months as a supermarket sales assistant, restocking shelves`],m=>[`${m} Monate Beifahrer bei einem Kurierdienst`,`${m} months as a driver's mate with a courier`]],
+  transferable:[y=>[`Habe ${y} Jahre im Familienbetrieb (Getränkehandel) das Lager geführt`,`Ran the stockroom of the family drinks wholesale business for ${y} years`],y=>[`${y} Jahre bei der Bundeswehr in der Materialbewirtschaftung`,`${y} years in materiel management in the armed forces`]],
+  none:[()=>[`Schulabschluss 2026, suche meinen ersten Job`,`Finished school in 2026, looking for a first job`]]
+};
+const CERTS={
+  warehouse:[['Forklift licence, valid',1],['Workplace safety training',.6]],
+  retail:[['Cash handling certificate',1],['Customer service course',.6]],
+  driver:[['Clean driving record, 3 years or more',1],['Defensive driving course',.6]]
+};
+const SOURCES=['Career site, mobile','Career site, mobile','Career site, mobile','Job board','WhatsApp apply link','Referral','QR code at site'];
+
+/* ---------------- state ---------------- */
+const STORE='screening-agent-workspace-v3';
+let S=null;
+const UI={req:'all',band:'all',status:'all',q:'',reviewTab:'score',sel:new Set(),msgC:null,msgReq:'all',candC:null,draft:null,jobReq:'REQ-2611-PNQ',auditF:{co:'all',actor:'all',q:''},fairModel:'v1.3',candPanel:null};
+
+function R(id){return S.reqs.find(r=>r.id===id)}
+function C(id){return S.cands.find(c=>c.id===id)}
+function P(c){return S.policy[R(c.req).country]}
+function me(){return USERS.find(u=>u.id===S.user)||USERS[0]}
+function canAct(){return me().role!=='Read-only'}
+function isAdmin(){return me().role==='TA admin'}
+
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}}
+function load(){try{const s=localStorage.getItem(STORE);if(s){const o=JSON.parse(s);if(o&&o.v===3)return o}}catch(e){}return null}
+
+function makeSlots(req){
+  const times={IN:[[10,0],[12,30],[15,0],[17,30]],US:[[9,0],[13,0],[16,30]],DE:[[9,30],[13,30],[15,30]]}[req.country];
+  const cap=req.country==='IN'?6:4; const out=[];
+  for(let d=0;d<14;d++){
+    const day=Date.UTC(2026,9,30)+d*D; const wd=new Date(day).getUTCDay();
+    if(wd===0) continue;
+    times.forEach(([h,m],i)=>out.push({id:`${req.id.slice(-3)}-${d}-${i}`,t:day+h*H+m*MIN,cap,booked:0}));
+  }
+  return out;
+}
+
+function genCand(req,rnd){
+  const pk=a=>a[Math.floor(rnd()*a.length)];
+  const co=req.country;
+  const age40=rnd()<0.3;
+  const sexR=rnd();
+  const sex=sexR<0.07?'Not stated':(sexR<(req.kind==='driver'?0.3:0.5)?'Woman':'Man');
+  const pT=age40?0.3:0.12;
+  let r=rnd(),type;
+  if(r<pT)type='transferable';else if(r<pT+0.36)type='direct';else if(r<pT+0.62)type='adjacent';else type='none';
+  if(age40&&type==='none'&&rnd()<0.5)type='adjacent';
+  const months=3+Math.floor(rnd()*30), years=2+Math.floor(rnd()*9);
+  let text,gloss=null;
+  const arg=type==='transferable'?years:months;
+  if(co==='DE'){const [de,en]=pk(EXP_DE[type])(arg);text=de;gloss=en}else{text=pk(EXP[req.kind][type])(arg)}
+  r=rnd(); let nS=r<0.06?0:r<0.38?1:r<0.72?2:3;
+  const shifts=[...req.shifts].sort(()=>rnd()-0.5).slice(0,nS);
+  const startDays=pk([3,5,7,7,10,14,14,21,30,45]);
+  r=rnd(); let cert=null,certCredit=req.kind==='driver'?0.2:0;
+  const cl=CERTS[req.kind];
+  if(r<0.24){cert=cl[0][0];certCredit=cl[0][1]}else if(r<0.58){cert=cl[1][0];certCredit=cl[1][1]}
+  r=rnd(); const lang=r<0.76?'yes':r<0.95?'some':'no';
+  const ans={rtw:rnd()>0.05,age:rnd()>0.02,licence:req.kind==='driver'?rnd()>0.1:true,shifts,startDays,lang,cert};
+  return {exp:{type,months,years,text,gloss},ans,certCredit,demo:{sex,age:age40?'40 and over':'Under 40'}};
+}
+
+function newCandidate(req,rnd,t){
+  const g=genCand(req,rnd);
+  const n=NAMES[req.country];
+  const first=n.f[Math.floor(rnd()*n.f.length)], last=n.l[Math.floor(rnd()*n.l.length)];
+  S.seq.c+=1+Math.floor(rnd()*7);
+  const ph={IN:'+91 9',US:'+1 214',DE:'+49 15'}[req.country];
+  const c=Object.assign({id:'C-'+S.seq.c,req:req.id,first,last,name:first+' '+last,phone:ph+String(Math.floor(rnd()*90+10))+' ••• ••'+String(Math.floor(rnd()*90+10)),source:SOURCES[Math.floor(rnd()*SOURCES.length)],thread:[],optedOut:false,status:'new'},g);
+  if(req.nyc && c.phone.startsWith('+1 214')) c.phone='+1 718'+c.phone.slice(6);
+  S.cands.push(c);
+  intake(c,t);
+  return c;
+}
+
+/* ---------------- scoring ---------------- */
+function credit(c,key,mv){
+  switch(key){
+    case 'exp':{const e=c.exp;if(e.type==='direct')return Math.max(.5,Math.min(1,e.months/12));if(e.type==='adjacent')return .6;if(e.type==='transferable')return mv==='v1.2'?.3:.75;return .1}
+    case 'shift':return [0,.5,.8,1][Math.min(3,c.ans.shifts.length)];
+    case 'start':{const d=c.ans.startDays;return d<=7?1:d<=14?.7:d<=30?.4:.1}
+    case 'cert':return c.certCredit;
+    case 'lang':return c.ans.lang==='yes'?1:c.ans.lang==='some'?.5:0;
+  }
+  return 0;
+}
+function evidence(c,key,mv){
+  const e=c.exp, a=c.ans;
+  switch(key){
+    case 'exp':
+      if(e.type==='direct')return `Direct experience: ${e.months} months in the same kind of work.`;
+      if(e.type==='adjacent')return `Related experience: ${e.months} months in a nearby role. Partial credit.`;
+      if(e.type==='transferable')return mv==='v1.2'?`Wording did not match a known job title. Low credit.`:`Mapped to transferable skills (stock handling, counts, cash or driving duties) over ${e.years} years.`;
+      return 'No paid work described.';
+    case 'shift':return a.shifts.length?`Available for ${a.shifts.length} of 3 shifts: ${a.shifts.join(', ')}.`:'No offered shift selected.';
+    case 'start':return `Can start in ${a.startDays} days.`;
+    case 'cert':return a.cert?`${a.cert}.`:'None listed.';
+    case 'lang':return a.lang==='yes'?'Yes, said they can follow briefings.':a.lang==='some'?'Some understanding, said they may need help.':'Said they cannot yet.';
+  }
+  return '';
+}
+function scoreWith(c,crit,mv){
+  let tot=0,ws=0;
+  const br=crit.map(k=>{const cr=credit(c,k.key,mv);tot+=k.w*cr;ws+=k.w;return {key:k.key,label:k.label,w:k.w,credit:cr,ev:evidence(c,k.key,mv)}});
+  return {score:ws?Math.round(tot/ws*100):0,br};
+}
+function koWith(c,kos){
+  return kos.filter(k=>k.on).map(k=>{
+    let pass=true,answer='Yes';
+    if(k.key==='rtw'){pass=c.ans.rtw;answer=pass?'Yes':'No'}
+    if(k.key==='age'){pass=c.ans.age;answer=pass?'Yes':'No'}
+    if(k.key==='shift'){pass=c.ans.shifts.length>0;answer=pass?c.ans.shifts.length+' selected':'None selected'}
+    if(k.key==='licence'){pass=c.ans.licence;answer=pass?'Yes':'No'}
+    return {key:k.key,label:k.label,need:k.need,needDE:k.needDE,pass,answer};
+  });
+}
+
+/* ---------------- messaging templates ---------------- */
+function statusLink(c){return `status.kestrel-careers.example/${c.id.slice(2)}`}
+function slotLabel(s,de){const d=new Date(s.t);return de?`${['So','Mo','Di','Mi','Do','Fr','Sa'][d.getUTCDay()]} ${d.getUTCDate()}.${d.getUTCMonth()+1}., ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} Uhr`:`${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`}
+function tpl(c,type,x={}){
+  const r=R(c.req), de=r.country==='DE';
+  const s=x.slots||[];
+  switch(type){
+    case 'ack':return de?`Hallo ${c.first}, vielen Dank für Ihre Bewerbung als ${r.title} in ${r.city}. Ein automatisierter Assistent prüft jede Bewerbung anhand der Stellenanforderungen. Über eine Absage entscheidet bei uns immer ein Mensch. Sie hören innerhalb von 48 Stunden von uns. Antworten Sie STOP, wenn Sie keine Nachrichten mehr möchten.`
+      :`Hi ${c.first}, thanks for applying for ${r.title} in ${r.city}. An automated assistant reads every application against the job requirements, and a recruiter decides anything it cannot settle on clear rules. You will hear from us within 48 hours. Reply STOP to stop messages.`;
+    case 'invite':return de?`Gute Nachrichten, ${c.first}: Wir laden Sie zu einem 15-minütigen Gespräch ein. Bitte wählen Sie einen Termin:\n${s.map((x,i)=>`${i+1}) ${slotLabel(x,true)}`).join('\n')}\nAntworten Sie 4 für andere Termine.`
+      :`Good news, ${c.first}. You are shortlisted for a 15-minute interview for ${r.title}. Pick a time:\n${s.map((x,i)=>`${i+1}) ${slotLabel(x)}`).join('\n')}\nReply 4 for other times.`;
+    case 'more':return de?`Weitere Termine:\n${s.map((x,i)=>`${i+1}) ${slotLabel(x,true)}`).join('\n')}`:`Here are more times:\n${s.map((x,i)=>`${i+1}) ${slotLabel(x)}`).join('\n')}`;
+    case 'booked':return de?`Gebucht: ${slotLabel(x.slot,true)}, ${r.site}. Bitte bringen Sie einen Ausweis mit. Antworten Sie R zum Verschieben oder C zum Absagen.`:`Booked: ${slotLabel(x.slot)} at ${r.site}. Please bring a photo ID. Reply R to reschedule or C to cancel.`;
+    case 'reminder':return de?`Erinnerung: Ihr Gespräch ist am ${slotLabel(x.slot,true)}. Antworten Sie R zum Verschieben.`:`Reminder: your interview for ${r.title} is on ${slotLabel(x.slot)}. Reply R to reschedule.`;
+    case 'ko':{const f=x.fail;return de?`Danke, ${c.first}. Für diese Stelle ist erforderlich, dass Sie ${f.map(k=>k.needDE).join(' und ')}. Laut Ihren Angaben trifft das nicht zu. Falls das ein Versehen ist, antworten Sie innerhalb von 24 Stunden mit ÄNDERN.`
+      :`Thanks, ${c.first}. This role needs someone who ${f.map(k=>k.need).join(' and ')}. Your answers say you don't. If that is a mistake, reply CHANGE within 24 hours and we will recheck.`}
+    case 'changed':return de?`Danke, wir haben Ihre Angabe aktualisiert und Ihre Bewerbung erneut geprüft.`:`Thanks. We have updated your answer and rechecked your application.`;
+    case 'rej_rule':return `Hi ${c.first}, we have closed your application for ${r.title} because the role needs someone who ${x.fail.map(k=>k.need).join(' and ')}. If you think this is wrong, a person will review it: ${statusLink(c)}. You can also see the data we hold about you there.`;
+    case 'rej_human':return de?`Hallo ${c.first}, vielen Dank für Ihre Bewerbung als ${r.title}. Unser Recruiting-Team hat Ihre Bewerbung persönlich geprüft. Wir können Ihnen diesmal leider kein Gespräch anbieten. Hauptgrund: ${REASONS[x.reason].de}. Erneute Prüfung oder Auskunft über Ihre Daten: ${statusLink(c)}`
+      :`Hi ${c.first}, thank you for applying for ${r.title}. A recruiter reviewed your application and we won't be moving forward this time. Main reason: ${REASONS[x.reason].en}. To ask for another review or see your data: ${statusLink(c)}`;
+    case 'stop':return de?`Sie erhalten keine weiteren Nachrichten. Eine Recruiterin oder ein Recruiter meldet sich ggf. telefonisch.`:`You will not get more messages from us. A recruiter may call you about your application.`;
+    case 'cancel':return de?`Ihr Termin wurde abgesagt. Viel Erfolg weiterhin!`:`Your interview is cancelled and your application is withdrawn. Good luck.`;
+    case 'review_upheld':return `Hi ${c.first}, a recruiter has looked at your application again and the decision stands. Thank you for asking. Your data stays available at ${statusLink(c)} until it is deleted.`;
+    case 'reopened':return de?`Hallo ${c.first}, wir haben Ihre Bewerbung erneut geöffnet. Sie hören innerhalb von 48 Stunden von uns.`:`Hi ${c.first}, we have reopened your application after another review. You will hear from us within 48 hours.`;
+  }
+  return '';
+}
+function out(c,t,text){if(c.optedOut&&!/STOP|Nachrichten mehr|stop messages|not get more/.test(text))return false;c.thread.push({d:'out',t,text});return true}
+function inc(c,t,text){c.thread.push({d:'in',t,text})}
+
+/* ---------------- log ---------------- */
+function log(t,c,event,actorType,actor,detail,extra){
+  S.seq.l++;
+  const r=c?R(c.req):(extra&&extra.req?R(extra.req):null);
+  S.log.push({id:'EV-'+String(S.seq.l).padStart(6,'0'),t,cid:c?c.id:null,req:r?r.id:null,co:r?r.country:null,event,actorType,actor,detail,mv:c?(c.modelV||S.model):S.model,cv:r?r.criteriaVersion:null});
+}
+
+/* ---------------- workflow ---------------- */
+function intake(c,t){
+  const r=R(c.req),p=S.policy[r.country];
+  c.receivedAt=t;
+  log(t,c,'Application received','candidate','Candidate',`Applied via ${c.source}. Notice ${p.noticeVersion} shown before submit.`);
+  const tA=t+(35+Math.floor(rand()*80))*1000;
+  c.ackAt=tA;
+  out(c,tA,tpl(c,'ack'));
+  log(tA,c,'Acknowledgment sent','agent',AGENT,`${r.channel}. Includes automated screening notice.`);
+  screen(c,tA+(20+Math.floor(rand()*40))*1000);
+}
+function screen(c,t){
+  const r=R(c.req),p=S.policy[r.country];
+  const sc=scoreWith(c,r.criteria,S.model);
+  c.score=sc.score;c.br=sc.br;c.ko=koWith(c,r.knockouts);c.modelV=S.model;c.critV=r.criteriaVersion;c.screenedAt=t;c.threshold=r.threshold;
+  const fail=c.ko.filter(k=>!k.pass);
+  if(fail.length){
+    c.band='ko';c.status='correction';c.windowEnds=t+p.correctionHours*H;
+    out(c,t,tpl(c,'ko',{fail}));
+    log(t,c,'Hard requirement not met','agent',AGENT,`${fail.map(f=>f.label).join('; ')}. Candidate asked to confirm. Window ${p.correctionHours} h.`);
+  } else if(sc.score>=r.threshold){
+    c.band='advance';
+    log(t,c,'Screened: interview band','agent',AGENT,`Score ${sc.score}, line ${r.threshold}. Criteria v${r.criteriaVersion}, model ${S.model}.`);
+    if(p.autoInvite) invite(c,t,'agent',AGENT,'Score at or above the interview line');
+    else {c.status='review';c.dueBy=c.receivedAt+p.slaHours*H}
+  } else {
+    c.band='review';c.status='review';c.dueBy=c.receivedAt+p.slaHours*H;
+    log(t,c,'Screened: sent to recruiter','agent',AGENT,`Score ${sc.score}, line ${r.threshold}. Score alone never closes an application.`);
+  }
+}
+function nextSlots(reqId,after,n,exclude){
+  exclude=exclude||[];
+  return S.slots[reqId].filter(s=>s.t>=after&&s.booked<s.cap&&!exclude.includes(s.id)).sort((a,b)=>a.t-b.t).slice(0,n);
+}
+function invite(c,t,aType,actor,basis){
+  const sl=nextSlots(c.req,t+18*H,3);
+  c.offered=sl.map(s=>s.id);c.status='invited';c.invitedAt=t;
+  if(!c.decidedAt)c.decidedAt=t;
+  c.decision={outcome:'advance',by:aType,actor,at:t,basis};
+  out(c,t,tpl(c,'invite',{slots:sl}));
+  log(t,c,'Interview invitation sent',aType,actor,`${R(c.req).channel}. ${sl.length} times offered. Basis: ${basis}.`);
+}
+function slotById(c,id){return S.slots[c.req].find(s=>s.id===id)}
+function book(c,s,t){
+  s.booked++;c.slot=s.id;c.status='booked';c.bookedAt=t;
+  out(c,t,tpl(c,'booked',{slot:s}));
+  log(t,c,'Interview booked','candidate','Candidate',`${slotLabel(s)} at ${R(c.req).site}.`);
+}
+function reply(c,raw,t){
+  const txt=String(raw).trim().toUpperCase();
+  inc(c,t,raw);
+  const t2=t+20e3;
+  if(txt==='STOP'){c.optedOut=true;c.thread.push({d:'out',t:t2,text:tpl(c,'stop')});log(t2,c,'Opted out of messages','candidate','Candidate','Recruiter to contact by phone if needed.');return}
+  if((txt==='CHANGE'||txt==='ÄNDERN')&&c.status==='correction'){
+    c.ans.rtw=true;c.ans.age=true;c.ans.licence=true;if(!c.ans.shifts.length)c.ans.shifts=[R(c.req).shifts[0]];
+    log(t,c,'Candidate corrected an answer','candidate','Candidate','Answer changed inside the correction window.');
+    out(c,t2,tpl(c,'changed'));screen(c,t2+10e3);return;
+  }
+  if(c.status==='invited'){
+    if(['1','2','3'].includes(txt)){
+      const s=slotById(c,c.offered[+txt-1]);
+      if(s&&s.booked<s.cap){book(c,s,t2);return}
+      const sl=nextSlots(c.req,t+18*H,3);c.offered=sl.map(x=>x.id);out(c,t2,tpl(c,'more',{slots:sl}));return;
+    }
+    if(txt==='4'){
+      const last=slotById(c,c.offered[c.offered.length-1]);
+      const sl=nextSlots(c.req,(last?last.t:t)+1,3,c.offered);c.offered=sl.map(x=>x.id);out(c,t2,tpl(c,'more',{slots:sl}));
+      log(t2,c,'More interview times offered','agent',AGENT,'Candidate asked for other times.');return;
+    }
+  }
+  if(c.status==='booked'){
+    if(txt==='R'){const s=slotById(c,c.slot);if(s)s.booked--;c.slot=null;const sl=nextSlots(c.req,t+18*H,3,[s&&s.id]);c.offered=sl.map(x=>x.id);c.status='invited';out(c,t2,tpl(c,'more',{slots:sl}));log(t2,c,'Reschedule requested','candidate','Candidate','Slot released, new times offered.');return}
+    if(txt==='C'){const s=slotById(c,c.slot);if(s)s.booked--;c.slot=null;c.status='withdrawn';out(c,t2,tpl(c,'cancel'));log(t2,c,'Candidate withdrew','candidate','Candidate','Interview cancelled by candidate.');return}
+  }
+}
+function reject(c,t,aType,actor,basis,x){
+  const p=P(c);
+  c.status='rejected';c.decidedAt=c.decidedAt||t;c.rejectedAt=t;
+  c.decision={outcome:'reject',by:aType,actor,at:t,basis,reason:x.reason||null,note:x.note||''};
+  c.retainUntil=t+p.retentionDays*D;
+  if(aType==='agent'){out(c,t,tpl(c,'rej_rule',{fail:c.ko.filter(k=>!k.pass)}));
+    log(t,c,'Application closed: requirement not met','agent',AGENT,`Rule-based. ${basis}. Candidate did not correct within window.`);
+    if(rand()<p.sampleRate){S.samples.push({id:'QA-'+(++S.seq.q),cid:c.id,t,status:'open'});log(t,c,'Picked for second-look sample','system','Quality sampling',`${Math.round(p.sampleRate*100)}% of rule-based closures are checked by a person.`)}
+  } else {
+    out(c,t,tpl(c,'rej_human',{reason:x.reason}));
+    log(t,c,'Rejected by recruiter','human',actor,`${REASONS[x.reason].label}.${x.note?' Note: '+x.note:''} Candidate notified with review link.`);
+  }
+}
+function closeWindow(c,t){
+  const p=P(c);const fail=c.ko.filter(k=>!k.pass);
+  if(p.autoRejectKO) reject(c,t,'agent',AGENT,fail.map(f=>f.label).join('; '),{});
+  else {c.status='confirm';c.dueBy=t+24*H;log(t,c,'Closure held for a person to confirm','system','Country rules',`${COUNTRY[R(c.req).country]}: a person confirms every rejection.`)}
+}
+function humanAdvance(c,t,u){
+  log(t,c,'Advanced by recruiter','human',u.name,c.band==='review'?`Score ${c.score} was below the line. Recruiter judgment.`:'Recruiter moved candidate forward.');
+  c.status='new';invite(c,t+15e3,'human',u.name,'Recruiter decision');
+}
+function humanConfirm(c,t,u){
+  log(t,c,'Rejection confirmed by recruiter','human',u.name,'Reviewed hard-requirement answer before closing.');
+  const p=P(c);c.status='rejected';c.decidedAt=c.decidedAt||t;c.rejectedAt=t;c.retainUntil=t+p.retentionDays*D;
+  c.decision={outcome:'reject',by:'human',actor:u.name,at:t,basis:'Hard requirement not met, confirmed by a person',reason:null};
+  const r=R(c.req);const fail=c.ko.filter(k=>!k.pass);
+  out(c,t+10e3,r.country==='DE'?`Hallo ${c.first}, wir haben Ihre Bewerbung als ${r.title} persönlich geprüft. Leider erfüllen Sie laut Ihren Angaben eine Voraussetzung nicht (${fail.map(f=>f.needDE).join(', ')}). Erneute Prüfung oder Auskunft über Ihre Daten: ${statusLink(c)}`:tpl(c,'rej_rule',{fail}));
+}
+function suggestReason(c){
+  const b=[...c.br].sort((a,b)=>(a.credit*a.w-a.w)-(b.credit*b.w-b.w))[0];
+  return b&&REASONS[b.key]?b.key:'exp';
+}
+function bookingFollowUp(c,from,now){
+  if(c.status!=='invited'||c.optedOut)return;
+  const tb=from+(0.4+rand()*8)*H;
+  if(tb<now&&rand()<0.8){reply(c,String(1+Math.floor(rand()*Math.min(3,c.offered.length))),tb)}
+}
+function interviewFollowUp(c,now,from){
+  if(c.status!=='booked')return;
+  const s=slotById(c,c.slot);if(!s)return;
+  const tr=s.t-24*H;
+  if(tr<=now&&tr>(from||0)&&tr>c.bookedAt){out(c,tr,tpl(c,'reminder',{slot:s}));log(tr,c,'Reminder sent','agent',AGENT,'24 hours before interview.')}
+  if(s.t+H<=now){
+    if(rand()<0.86){c.status='interviewed';log(s.t+40*MIN,c,'Interview attended','human',R(c.req).hm,'Hiring manager notes added in Recruit. Handed to offer stage.')}
+    else{c.status='noshow';log(s.t+40*MIN,c,'Did not attend interview','human',R(c.req).hm,'Agent will offer one new time.')}
+  }
+}
+
+function seed(){
+  rand=mulberry32(4112026);
+  S={v:3,now:BASE_NOW,user:'u4',model:'v1.3',seq:{c:24180,l:0,r:0,q:0},cands:[],log:[],requests:[],samples:[],slots:{},
+     reqs:REQS.map(r=>Object.assign({},r,{
+       criteria:CRITERIA.map(k=>Object.assign({},k)),
+       knockouts:['rtw','age','shift'].concat(r.kind==='driver'?['licence']:[]).map(k=>Object.assign({on:true},KO_DEF[k](r.country))),
+       threshold:70,criteriaVersion:3,
+       history:[{v:1,t:Date.UTC(2026,8,22,11,0),by:'Sam Okafor',hm:r.hm,note:'First version from job analysis workshop with hiring manager.'},{v:2,t:Date.UTC(2026,9,6,15,20),by:'Sam Okafor',hm:r.hm,note:'Removed postcode and commute time from scoring. Possible proxy for protected groups.'},{v:3,t:Date.UTC(2026,9,27,10,5),by:'Sam Okafor',hm:r.hm,note:'Model v1.3 with transferable-skills mapping after pilot feedback.'}]
+     })),
+     policy:JSON.parse(JSON.stringify(POLICY))};
+  S.reqs.forEach(r=>S.slots[r.id]=makeSlots(r));
+  log(Date.UTC(2026,9,27,10,5),null,'Model v1.3 activated','human','Sam Okafor','Adds transferable-skills mapping. Backtest and impact checks attached in Fairness and quality.',{});
+  const rnd=rand;
+  const plan=[];
+  S.reqs.forEach(r=>{for(let i=0;i<r.n;i++)plan.push({r,t:S.now-Math.floor(rnd()*80*H)-5*MIN})});
+  plan.sort((a,b)=>a.t-b.t);
+  plan.forEach(({r,t})=>{
+    const c=newCandidate(r,rnd,t);
+    seedFollow(c);
+  });
+  // candidate requests
+  const rej=S.cands.filter(c=>c.status==='rejected');
+  const us=rej.find(c=>R(c.req).country==='US'&&c.decision.by==='human');
+  if(us)addRequest(us,'human_review',us.rejectedAt+5*H,'I have 2 years of warehouse experience that I forgot to list. Please look again.');
+  const inr=rej.find(c=>R(c.req).country==='IN');
+  if(inr)addRequest(inr,'deletion',inr.rejectedAt+9*H,'Please delete my details.');
+  const any=S.cands.find(c=>c.status==='review'&&R(c.req).country==='DE');
+  if(any)addRequest(any,'access',S.now-3*H,'',true);
+  S.user='u4';
+  rand=Math.random;
+}
+function seedFollow(c){
+  const now=S.now, r=R(c.req);
+  if(c.status==='invited')bookingFollowUp(c,c.invitedAt,now);
+  if(c.status==='correction'){
+    if(rand()<0.12&&c.screenedAt+2*H<now)reply(c,r.country==='DE'?'ÄNDERN':'CHANGE',c.screenedAt+(1+rand()*3)*H);
+    else if(c.windowEnds<=now){closeWindow(c,c.windowEnds);
+      if(c.status==='confirm'&&now-c.windowEnds>3*H&&rand()<0.6)humanConfirm(c,c.windowEnds+(1+rand()*2)*H,recruiterFor('DE'));}
+  }
+  if(c.status==='invited')bookingFollowUp(c,c.invitedAt,now);
+  if(c.status==='review'){
+    const td=c.receivedAt+(5+rand()*26)*H;
+    if(td<now&&rand()<0.74){
+      const u=recruiterFor(r.country);
+      if(c.score>=56||rand()<0.1){humanAdvance(c,td,u);bookingFollowUp(c,td,now)}
+      else reject(c,td,'human',u.name,'Recruiter review',{reason:suggestReason(c)});
+    }
+  }
+  interviewFollowUp(c,now,0);
+}
+function addRequest(c,type,t,text,done){
+  const p=P(c);S.seq.r++;
+  const due=type==='human_review'?t+5*D:t+p.dataDays*D;
+  const q={id:'RQ-'+String(S.seq.r).padStart(4,'0'),cid:c.id,type,t,due,text:text||'',status:done?'done':'open',resolvedAt:done?t:null,resolvedBy:done?'Self-service':null,outcome:done?'Data copy shown to candidate':null};
+  S.requests.push(q);
+  const lab={human_review:'Asked for a person to review',access:'Asked to see their data',deletion:'Asked for data deletion'}[type];
+  log(t,c,lab,'candidate','Candidate',type==='access'?'Served instantly on the status page.':`Due ${fmtD(due)}.`);
+  return q;
+}
+
+const POLICY={
+  IN:{autoRejectKO:true,autoInvite:true,correctionHours:24,slaHours:48,sampleRate:.1,dataDays:30,retentionDays:365,noticeVersion:'IN-N2',quiet:'21:00 to 08:00',signoffs:[['Customer legal sign-off for rule-based closures','Recorded 27 Oct 2026',true],['Candidate notice and consent text','Approved, version IN-N2',true],['Data stored in India region','Mumbai region',true]]},
+  US:{autoRejectKO:true,autoInvite:true,correctionHours:24,slaHours:48,sampleRate:.1,dataDays:45,retentionDays:730,noticeVersion:'US-N3',quiet:'21:00 to 08:00',signoffs:[['Customer legal sign-off for rule-based closures','Recorded 29 Oct 2026',true],['Independent bias audit, New York City roles','Summary published 20 Oct 2026',true],['SMS consent captured at application','Written consent, logged per candidate',true]]},
+  DE:{autoRejectKO:false,autoInvite:true,correctionHours:24,slaHours:48,sampleRate:.1,dataDays:30,retentionDays:183,noticeVersion:'DE-N2',quiet:'20:00 to 08:00',signoffs:[['Customer legal sign-off','Recorded 30 Oct 2026',true],['Works council agreement','Signed 22 Oct 2026, covers screening and scheduling',true],['Data protection impact assessment','Completed, approved by DPO',true],['Data stored in EU region','Frankfurt region',true]]}
+};
+
+/* ---------------- backtest (historic pool, deterministic) ---------------- */
+let BT=null;
+function backtest(){
+  if(BT)return BT;
+  const rnd=mulberry32(77031);
+  const pool=[];
+  const crit=CRITERIA;
+  REQS.forEach(r=>{
+    const n={IN:1700,US:1300,DE:900}[r.country]*(r.n/40);
+    for(let i=0;i<n;i++){
+      const g=genCand(r,rnd);
+      const q=({direct:.95,transferable:.85,adjacent:.6,none:.12})[g.exp.type]*credit(g,'shift')*(g.ans.startDays<=14?1:.6);
+      const hired=g.ans.rtw&&g.ans.age&&g.ans.licence&&g.ans.shifts.length>0&&rnd()<q*0.16;
+      const ko=!(g.ans.rtw&&g.ans.age&&g.ans.licence&&g.ans.shifts.length>0);
+      pool.push({co:r.country,demo:g.demo,hired,ko,s12:scoreWith(g,crit,'v1.2').score,s13:scoreWith(g,crit,'v1.3').score});
+    }
+  });
+  const hires=pool.filter(p=>p.hired);
+  const low=(k)=>hires.filter(h=>h[k]<50).length;
+  const band=(k)=>{const o={adv:0,rev:0,low:0};hires.forEach(h=>{if(h[k]>=70)o.adv++;else if(h[k]>=50)o.rev++;else o.low++});return o};
+  function impact(k,co){
+    const ps=pool.filter(p=>(!co||p.co===co)&&!p.ko);
+    const groups={'Women':p=>p.demo.sex==='Woman','Men':p=>p.demo.sex==='Man','Under 40':p=>p.demo.age==='Under 40','40 and over':p=>p.demo.age==='40 and over'};
+    const rates={};Object.entries(groups).forEach(([g,f])=>{const m=ps.filter(f);rates[g]={n:m.length,sel:m.filter(p=>p[k]>=70).length}});
+    const out=[];
+    [['Women','Men'],['Under 40','40 and over']].forEach(pair=>{const rs=pair.map(g=>rates[g].n?rates[g].sel/rates[g].n:0);const mx=Math.max(...rs);pair.forEach((g,i)=>out.push({g,n:rates[g].n,rate:rs[i],ratio:mx?rs[i]/mx:1}))});
+    return out;
+  }
+  BT={pool:pool.length,hires:hires.length,low12:low('s12'),low13:low('s13'),b12:band('s12'),b13:band('s13'),impact};
+  return BT;
+}
+
+/* ---------------- metrics ---------------- */
+const ADV=['invited','booked','interviewed','noshow','withdrawn'];
+function kpis(list){
+  const L=list||S.cands;
+  const ack=median(L.map(c=>c.ackAt-c.receivedAt));
+  const elig=L.filter(c=>c.decidedAt||S.now-c.receivedAt>=48*H);
+  const within=elig.filter(c=>c.decidedAt&&c.decidedAt-c.receivedAt<=48*H);
+  const decided=L.filter(c=>c.decidedAt);
+  const medDec=median(decided.map(c=>c.decidedAt-c.receivedAt));
+  const booked=L.filter(c=>['booked','interviewed','noshow'].includes(c.status)).length;
+  const review=L.filter(c=>c.status==='review');
+  const overdue=review.filter(c=>c.dueBy<S.now).length;
+  const ruleRej=L.filter(c=>c.status==='rejected'&&c.decision.by==='agent').length;
+  const humRej=L.filter(c=>c.status==='rejected'&&c.decision.by==='human').length;
+  const autoAdv=L.filter(c=>c.decision&&c.decision.outcome==='advance'&&c.decision.by==='agent').length;
+  const humAdv=L.filter(c=>c.decision&&c.decision.outcome==='advance'&&c.decision.by==='human').length;
+  return {n:L.length,ack,within:pct(within.length,elig.length),eligN:elig.length,medDec,booked,review:review.length,overdue,ruleRej,humRej,autoAdv,humAdv,
+    passed:L.filter(c=>c.band!=='ko').length,advanced:autoAdv+humAdv,interviewed:L.filter(c=>c.status==='interviewed').length,
+    ko:L.filter(c=>c.band==='ko').length,confirm:L.filter(c=>c.status==='confirm').length,correction:L.filter(c=>c.status==='correction').length};
+}
+function queueCounts(){
+  return {score:S.cands.filter(c=>c.status==='review').length,confirm:S.cands.filter(c=>c.status==='confirm').length,sample:S.samples.filter(s=>s.status==='open').length,requests:S.requests.filter(q=>q.status==='open').length};
+}
+
+/* ---------------- render helpers ---------------- */
+const STATUS={
+  review:['With recruiter','p-warn'],correction:['Asked to confirm answer','p-info'],confirm:['Closure awaiting a person','p-warn'],
+  invited:['Invited to book','p-acc'],booked:['Interview booked','p-good'],interviewed:['Interviewed','p-good'],noshow:['No-show','p-bad'],
+  rejected:['Closed','p-bad'],withdrawn:['Withdrawn',''],new:['Screening','']
+};
+const BAND={advance:['Interview band','p-good'],review:['Recruiter review','p-warn'],ko:['Requirement not met','p-bad']};
+const pill=(m,k)=>{const x=m[k]||[k,''];return `<span class="pill ${x[1]}">${esc(x[0])}</span>`};
+function sbar(score,th){return `<div class="sbar"><div class="t"><div class="f" style="width:${score}%"></div><div class="th" style="left:${th}%"></div></div><b>${score}</b></div>`}
+function coTag(co){return `<span class="mono faint">${co}</span>`}
+function decidedBy(c){if(!c.decision)return '';return c.decision.by==='agent'?'Agent, by rule':'Person: '+c.decision.actor}
+
+/* ---------------- views ---------------- */
+const VIEWS=[
+  {id:'overview',label:'Overview',ix:'00'},
+  {id:'jobs',label:'Jobs and criteria',ix:'01'},
+  {id:'applications',label:'Applications',ix:'02'},
+  {id:'messages',label:'Messages and interviews',ix:'03'},
+  {id:'review',label:'Review queue',ix:'04'},
+  {id:'candidate',label:'Candidate view',ix:'05'},
+  {id:'fairness',label:'Fairness and quality',ix:'06'},
+  {id:'audit',label:'Audit trail',ix:'07'},
+  {id:'rules',label:'Country rules',ix:'08'}
+];
+function current(){const h=(location.hash||'').slice(1);return VIEWS.find(v=>v.id===h)?h:'overview'}
+function renderNav(){
+  const q=queueCounts();const tot=q.score+q.confirm+q.sample+q.requests;const cur=current();
+  $('#nav').innerHTML=VIEWS.map(v=>`<a href="#${v.id}" ${v.id===cur?'aria-current="page"':''}><span class="ix">${v.ix}</span><span>${v.label}</span>${v.id==='review'&&tot?`<span class="badge">${tot}</span>`:'<span></span>'}</a>`).join('');
+  $('#clock').textContent='Workspace clock '+fmtT(S.now);
+  $('#who').innerHTML=USERS.map(u=>`<option value="${u.id}" ${u.id===S.user?'selected':''}>${esc(u.name)}, ${esc(u.role)}</option>`).join('');
+  $('#btn-intake').disabled=!canAct();$('#btn-adv').disabled=!canAct();
+}
+function render(){
+  renderNav();
+  const v=current();
+  const f={overview:vOverview,jobs:vJobs,applications:vApps,review:vReview,messages:vMessages,candidate:vCandidate,fairness:vFairness,audit:vAudit,rules:vRules}[v];
+  $('#view').innerHTML=f();
+  if(v==='messages'){const b=$('#thread');if(b)b.scrollTop=b.scrollHeight}
+  save();
+}
+
+function vOverview(){
+  const k=kpis();const q=queueCounts();
+  const cos=['IN','US','DE'];
+  const max=k.n||1;
+  const att=[];
+  if(k.overdue)att.push(['bad',`${k.overdue} applications past the 48-hour reply promise`,'review']);
+  if(q.score)att.push(['warn',`${q.score} applications waiting for a recruiter decision`,'review']);
+  if(q.confirm)att.push(['warn',`${q.confirm} ${q.confirm===1?'closure':'closures'} in Germany waiting for a person to confirm`,'review']);
+  if(q.sample)att.push(['info',`${q.sample} rule-based ${q.sample===1?'closure':'closures'} picked for a second look`,'review']);
+  const openReq=S.requests.filter(r=>r.status==='open');
+  if(openReq.length)att.push(['info',`${openReq.length} candidate ${openReq.length===1?'request':'requests'} open (review or data). Earliest due ${fmtD(Math.min(...openReq.map(r=>r.due)))}`,'review']);
+  const bt=backtest();
+  const lowPct=bt.low13/bt.hires*100;
+  att.push([lowPct<=2?'good':'warn',`Model v1.3 backtest: ${lowPct.toFixed(1)}% of past hires score below 50. Gate is 2% or less, so score-based closures stay off`,'fairness']);
+  liveImpact().forEach(l=>l.rows.filter(x=>x.n>=30&&x.ratio<0.8).forEach(x=>att.push(['warn',`Live impact ratio ${x.ratio.toFixed(2)} for ${x.k.toLowerCase()} in ${COUNTRY[l.co]} (n=${x.n}). Check before the next criteria review`,'fairness'])));
+  // projection
+  const share=x=>k.n?x/k.n:0;
+  const wk=13000;
+  const revShare=share(S.cands.filter(c=>c.band==='review').length);
+  const koShare=share(k.ko);
+  const deKO=share(S.cands.filter(c=>c.band==='ko'&&R(c.req).country==='DE').length);
+  const hrsToday=wk*3/60;
+  const hrsAgent=wk*revShare*40/3600+wk*deKO*20/3600+wk*(koShare-deKO)*0.1*30/3600+wk*0.004*15/60;
+  return `
+  <div class="page-h"><div><div class="eyebrow">Peak hiring, all countries</div><h1>Overview</h1></div>
+  <p class="muted">Every application gets a reply within minutes. Strong matches book their own interview. Everything else goes to a recruiter, who decides within 48 hours.</p></div>
+  <div class="kpis">
+    <div class="kpi"><span class="l">Median time to first reply</span><span class="v">${dur(k.ack)}</span><span class="s">Was 9 days before go-live</span></div>
+    <div class="kpi"><span class="l">Decision within 48 h</span><span class="v">${k.within}%</span><span class="s">${k.eligN} applications old enough to count</span></div>
+    <div class="kpi"><span class="l">Median time to decision</span><span class="v">${dur(k.medDec)}</span><span class="s">Invite, or closure by a person or rule</span></div>
+    <div class="kpi"><span class="l">Interviews booked</span><span class="v">${k.booked}</span><span class="s">Booked by candidates over WhatsApp or SMS</span></div>
+    <div class="kpi"><span class="l">Recruiter queue</span><span class="v">${q.score+q.confirm}</span><span class="s">${k.overdue?`<b style="color:var(--bad)">${k.overdue} overdue</b>`:'None overdue'}</span></div>
+    <div class="kpi"><span class="l">Closures by who</span><span class="v">${k.humRej} / ${k.ruleRej}</span><span class="s">Person / rule. Score-only: 0</span></div>
+  </div>
+  <div class="grid2">
+    <section class="card"><div class="card-h"><h2>Pipeline</h2><span class="faint">${k.n} applications in the last 4 days</span></div>
+      <div class="funnel">
+        ${[['Received',k.n],['Met hard requirements',k.passed],['Moved to interview',k.advanced],['Interview booked or held',k.booked],['Interviewed',k.interviewed]].map(([l,v])=>`<div class="row"><span>${l}</span><div class="bar"><i style="width:${v/max*100}%"></i></div><b class="num" style="text-align:right">${v}</b></div>`).join('')}
+      </div>
+      <div class="legend"><span>Moved to interview: ${k.autoAdv} by the agent at or above the line, ${k.humAdv} by recruiters from the review queue.</span></div>
+    </section>
+    <section class="card"><div class="card-h"><h2>Needs attention</h2></div>
+      <div class="list">${att.map(([lv,t,to])=>`<div class="it"><span class="dot ${lv}"></span><span>${esc(t)}</span><a class="btn btn-sm" href="#${to}">Open</a></div>`).join('')}</div>
+    </section>
+  </div>
+  <section class="card"><div class="card-h"><h2>By country</h2><a href="#rules" class="faint">Country rules</a></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Country</th><th class="r">Applications</th><th class="r">First reply</th><th class="r">Decided in 48 h</th><th class="r">Invited by agent</th><th class="r">With recruiter</th><th class="r">Closed by rule</th><th class="r">Closed by person</th><th>Closure mode</th></tr></thead><tbody>
+    ${cos.map(co=>{const L=S.cands.filter(c=>R(c.req).country===co);const x=kpis(L);const p=S.policy[co];return `<tr><td><b>${COUNTRY[co]}</b></td><td class="r num">${x.n}</td><td class="r num">${dur(x.ack)}</td><td class="r num">${x.within}%</td><td class="r num">${x.autoAdv}</td><td class="r num">${x.review}</td><td class="r num">${x.ruleRej}</td><td class="r num">${x.humRej}</td><td>${p.autoRejectKO?'<span class="pill p-info">Rule closes failed requirements</span>':'<span class="pill p-warn">A person confirms every closure</span>'}</td></tr>`}).join('')}
+    </tbody></table></div>
+  </section>
+  <section class="card"><div class="card-h"><h2>How an application moves through</h2><span class="faint">Each step opens the screen where it happens</span></div>
+    <div class="flow">
+      <a href="#jobs"><span class="ix">01</span><b>Set criteria</b><span>Hiring manager approves what is scored</span></a>
+      <a href="#applications"><span class="ix">02</span><b>Read and rank</b><span>Agent screens each application in about a minute</span></a>
+      <a href="#messages"><span class="ix">03</span><b>Book interviews</b><span>Interview band picks a time by chat</span></a>
+      <a href="#review"><span class="ix">04</span><b>Recruiter decides</b><span>Everything below the line, within 48 h</span></a>
+      <a href="#candidate"><span class="ix">05</span><b>Candidate sees why</b><span>Status, reasons, review and data requests</span></a>
+      <a href="#fairness"><span class="ix">06</span><b>Check fairness</b><span>Impact ratios, backtest, second looks</span></a>
+      <a href="#audit"><span class="ix">07</span><b>Show an auditor</b><span>Decision records and the auditor pack</span></a>
+    </div>
+  </section>
+  <section class="card"><div class="card-h"><h2>Recruiter time at peak volume</h2><span class="faint">13,000 applications a week, mix taken from this workspace</span></div>
+    <div class="grid3">
+      <div><div class="eyebrow">Reading every application</div><div class="kpi" style="border:0;padding:4px 0"><span class="v">${Math.round(hrsToday)} h</span><span class="s">3 minutes each, every week</span></div></div>
+      <div><div class="eyebrow">With the agent</div><div class="kpi" style="border:0;padding:4px 0"><span class="v">${Math.round(hrsAgent)} h</span><span class="s">Review queue at 40 s each with summary, German confirmations, second looks, requests</span></div></div>
+      <div><div class="eyebrow">Share needing a person</div><div class="kpi" style="border:0;padding:4px 0"><span class="v">${Math.round((revShare+deKO)*100)}%</span><span class="s">Of applications. The rest are invited or closed on a stated requirement</span></div></div>
+    </div>
+  </section>`;
+}
+
+function vJobs(){
+  const r=R(UI.jobReq);
+  if(!UI.draft||UI.draft.req!==r.id)UI.draft={req:r.id,criteria:r.criteria.map(k=>Object.assign({},k)),knockouts:r.knockouts.map(k=>Object.assign({},k)),threshold:r.threshold,hm:false,note:''};
+  const d=UI.draft;
+  const prev=preview(r,d);
+  return `
+  <div class="page-h"><div><div class="eyebrow">Step 01</div><h1>Jobs and criteria</h1></div><p class="muted">What the agent scores is set per job and approved by the hiring manager. Changes create a new version, and pending applications are rescored.</p></div>
+  <div class="tbl-wrap card" style="padding:8px 12px"><table class="tbl"><thead><tr><th>Job</th><th>Site</th><th>Country</th><th class="r">Openings</th><th class="r">Applications</th><th class="r">Booked</th><th>Channel</th><th>Criteria</th></tr></thead><tbody>
+  ${S.reqs.map(x=>{const L=S.cands.filter(c=>c.req===x.id);return `<tr class="click" data-act="pickJob" data-id="${x.id}" ${x.id===r.id?'style="background:var(--accent-soft)"':''}><td><b>${esc(x.title)}</b><div class="mono faint">${x.id}</div></td><td>${esc(x.site)}</td><td>${coTag(x.country)}</td><td class="r num">${x.openings}</td><td class="r num">${L.length}</td><td class="r num">${L.filter(c=>['booked','interviewed','noshow'].includes(c.status)).length}</td><td>${x.channel}</td><td class="mono">v${x.criteriaVersion}</td></tr>`}).join('')}
+  </tbody></table></div>
+  <div class="grid2">
+    <section class="card">
+      <div class="card-h"><h2>Scored criteria</h2><span class="mono faint">${esc(r.title)} · draft of v${r.criteriaVersion+1}</span></div>
+      ${d.criteria.map((k,i)=>`<div class="crit"><label for="w-${k.key}">${esc(k.label)}</label><input id="w-${k.key}" type="range" min="0" max="50" step="5" value="${k.w}" data-in="weight" data-i="${i}" ${canAct()?'':'disabled'}><b class="num" style="text-align:right">${k.w}</b></div>`).join('')}
+      <div class="crit"><label for="thr">Interview line (score out of 100)</label><input id="thr" type="range" min="50" max="90" step="1" value="${d.threshold}" data-in="thr" ${canAct()?'':'disabled'}><b class="num" style="text-align:right">${d.threshold}</b></div>
+      <div class="note">Applications at or above the line are invited automatically. Applications below it go to a recruiter. Nothing is closed because of its score.</div>
+    </section>
+    <section class="card">
+      <div class="card-h"><h2>Hard requirements</h2><span class="faint">Asked as yes or no questions</span></div>
+      ${d.knockouts.map((k,i)=>`<div class="switch"><div><div>${esc(k.label)}</div><div class="d">Candidate is asked to confirm before anything is closed.</div></div><input type="checkbox" id="ko-${k.key}" data-in="ko" data-i="${i}" ${k.on?'checked':''} ${canAct()?'':'disabled'} aria-label="${esc(k.label)}"></div>`).join('')}
+      <div><div class="eyebrow" style="margin-bottom:6px">Never used for screening</div><div class="chips">${EXCLUDED.map(x=>`<span class="chip x">${x}</span>`).join('')}</div></div>
+    </section>
+  </div>
+  <div class="grid2">
+    <section class="card"><div class="card-h"><h2>Effect of this draft</h2><span class="faint">On applications in this job</span></div>
+      <dl class="kv"><dt>Share in interview band</dt><dd class="num"><b>${prev.before}%</b> now, <b>${prev.after}%</b> with this draft</dd>
+      <dt>Waiting with recruiters</dt><dd class="num">${prev.toInvite} would move up and be invited</dd>
+      <dt>In correction window</dt><dd class="num">${prev.koClear} would no longer fail a requirement</dd></dl>
+      <dl class="kv"><dt>Hiring manager</dt><dd>${esc(r.hm)}</dd></dl>
+      <label class="switch" style="border:0"><span>${esc(r.hm)} has approved this version</span><input type="checkbox" id="hmok" data-in="hm" ${d.hm?'checked':''} ${canAct()?'':'disabled'}></label>
+      <input type="text" id="cnote" data-in="note" placeholder="What changed and why" value="${esc(d.note)}" ${canAct()?'':'disabled'}>
+      <div class="row-actions"><button class="btn btn-pri" data-act="publishCriteria" ${canAct()&&d.hm&&d.note.trim()?'':'disabled'}>Publish v${r.criteriaVersion+1}</button><button class="btn" data-act="resetDraft">Discard draft</button>
+      <span class="faint">${!canAct()?'Read-only access':!d.hm?'Needs hiring manager approval':!d.note.trim()?'Add a short change note':''}</span></div>
+    </section>
+    <section class="card"><div class="card-h"><h2>Version history</h2></div>
+      <div class="tl">${[...r.history].reverse().map(h=>`<div class="ev human"><div><b class="mono">v${h.v}</b> ${esc(h.note)}</div><div class="w">${fmtT(h.t)} · published by ${esc(h.by)} · approved by ${esc(h.hm)}</div></div>`).join('')}</div>
+    </section>
+  </div>`;
+}
+function preview(r,d){
+  const L=S.cands.filter(c=>c.req===r.id);
+  const inBand=(crit,thr,kos)=>L.filter(c=>koWith(c,kos).every(k=>k.pass)&&scoreWith(c,crit,S.model).score>=thr).length;
+  const before=pct(inBand(r.criteria,r.threshold,r.knockouts),L.length);
+  const after=pct(inBand(d.criteria,d.threshold,d.knockouts),L.length);
+  const toInvite=L.filter(c=>c.status==='review'&&scoreWith(c,d.criteria,S.model).score>=d.threshold).length;
+  const koClear=L.filter(c=>c.status==='correction'&&koWith(c,d.knockouts).every(k=>k.pass)).length;
+  return {before,after,toInvite,koClear};
+}
+
+function filteredApps(){
+  return S.cands.filter(c=>(UI.req==='all'||c.req===UI.req)&&(UI.band==='all'||c.band===UI.band)&&(UI.status==='all'||c.status===UI.status)&&(!UI.q||(c.name+' '+c.id).toLowerCase().includes(UI.q.toLowerCase())))
+    .sort((a,b)=>b.receivedAt-a.receivedAt);
+}
+function vApps(){
+  const L=filteredApps();
+  return `
+  <div class="page-h"><div><div class="eyebrow">Step 02</div><h1>Applications</h1></div><p class="muted">Every application is read and scored against its job within about a minute of arriving. Open any row to see the evidence behind its score.</p></div>
+  <section class="card">
+    <div class="filters">
+      <select id="f-req" data-in="fReq" aria-label="Job"><option value="all">All jobs</option>${S.reqs.map(r=>`<option value="${r.id}" ${UI.req===r.id?'selected':''}>${esc(r.title)} · ${r.city}</option>`).join('')}</select>
+      <select id="f-band" data-in="fBand" aria-label="Band"><option value="all">All bands</option>${Object.entries(BAND).map(([k,v])=>`<option value="${k}" ${UI.band===k?'selected':''}>${v[0]}</option>`).join('')}</select>
+      <select id="f-status" data-in="fStatus" aria-label="Status"><option value="all">All statuses</option>${Object.entries(STATUS).filter(([k])=>k!=='new').map(([k,v])=>`<option value="${k}" ${UI.status===k?'selected':''}>${v[0]}</option>`).join('')}</select>
+      <input type="text" id="f-q" data-in="fQ" placeholder="Search name or ID" value="${esc(UI.q)}">
+      <span class="faint num">${L.length} shown</span>
+    </div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Candidate</th><th>Job</th><th>Score vs line</th><th>Band</th><th>Status</th><th>Decided by</th><th class="r">Received</th></tr></thead><tbody>
+    ${L.slice(0,150).map(c=>{const r=R(c.req);return `<tr class="click" data-act="openCand" data-id="${c.id}"><td><b>${esc(c.name)}</b><div class="mono faint">${c.id}</div></td><td>${esc(r.title)}<div class="faint">${esc(r.city)} ${coTag(r.country)}</div></td><td>${sbar(c.score,c.threshold)}</td><td>${pill(BAND,c.band)}</td><td>${pill(STATUS,c.status)}</td><td class="faint">${esc(decidedBy(c))}</td><td class="r faint num">${dur(S.now-c.receivedAt)} ago</td></tr>`}).join('')||`<tr><td colspan="7" class="empty">No applications match these filters.</td></tr>`}
+    </tbody></table></div>
+  </section>`;
+}
+
+function candDetail(c){
+  const r=R(c.req),p=S.policy[r.country];
+  const ev=S.log.filter(e=>e.cid===c.id).sort((a,b)=>a.t-b.t);
+  const act=canAct();
+  let actions='';
+  if(c.status==='review')actions=`<button class="btn btn-pri" data-act="advance" data-id="${c.id}" ${act?'':'disabled'}>Invite to interview</button><button class="btn btn-bad" data-act="showReject" data-id="${c.id}" ${act?'':'disabled'}>Reject with reason</button>`;
+  if(c.status==='confirm')actions=`<button class="btn btn-bad" data-act="confirmReject" data-id="${c.id}" ${act?'':'disabled'}>Confirm closure</button><button class="btn" data-act="toReview" data-id="${c.id}" ${act?'':'disabled'}>Send to recruiter review</button>`;
+  if(c.status==='correction')actions=`<span class="faint">Waiting for the candidate until ${fmtT(c.windowEnds)}</span>`;
+  const rejectForm=UI.candPanel===c.id?`<div class="card" style="background:var(--surface-2);border:0"><h3>Reject with reason</h3>
+    <label for="rj-reason" class="faint">Main reason, sent to the candidate in plain words</label>
+    <select id="rj-reason">${Object.entries(REASONS).map(([k,v])=>`<option value="${k}" ${suggestReason(c)===k?'selected':''}>${v.label}</option>`).join('')}</select>
+    <textarea id="rj-note" rows="2" placeholder="Internal note (optional, kept in the decision record)"></textarea>
+    <div class="row-actions"><button class="btn btn-bad" data-act="doReject" data-id="${c.id}">Reject and notify</button><button class="btn" data-act="cancelReject">Cancel</button></div></div>`:'';
+  return `
+  <div class="card-h"><div><div class="eyebrow">${c.id} · ${esc(r.title)}, ${esc(r.city)}</div><h2 style="font-size:22px">${esc(c.name)}</h2></div><button class="btn btn-sm" data-act="closeDrawer">Close</button></div>
+  <div class="row-actions">${pill(STATUS,c.status)} ${pill(BAND,c.band)} <span class="faint">${esc(c.source)} · ${esc(c.phone)} · received ${fmtT(c.receivedAt)}</span></div>
+  <div class="row-actions">${actions}<a class="btn btn-sm" href="#messages" data-act="gotoMsg" data-id="${c.id}">Messages</a><a class="btn btn-sm" href="#candidate" data-act="gotoCand" data-id="${c.id}">Candidate view</a><button class="btn btn-sm" data-act="record" data-id="${c.id}">Decision record</button></div>
+  ${rejectForm}
+  ${c.status==='review'?`<div class="note ${c.dueBy<S.now?'warn':''}">Recruiter decision due by ${fmtT(c.dueBy)}${c.dueBy<S.now?', now overdue':''}. Suggested from the evidence: ${c.score>=56?'worth an interview':'likely not a match for this job'}. The recruiter decides.</div>`:''}
+  <section class="card"><div class="card-h"><h3>Hard requirements</h3><span class="faint">Candidate's own answers</span></div>
+    ${c.ko.map(k=>`<div class="gate"><span class="dot ${k.pass?'good':'bad'}"></span><span>${esc(k.label)}</span><b class="${k.pass?'':'num'}" style="color:${k.pass?'var(--good)':'var(--bad)'}">${esc(k.answer)}</b></div>`).join('')}
+  </section>
+  <section class="card"><div class="card-h"><h3>Score ${c.score} of 100</h3><span class="faint">Line ${c.threshold} · criteria v${c.critV} · model ${c.modelV}</span></div>
+    <div>${c.br.map(b=>`<div class="crit"><span>${esc(b.label)} <span class="faint">weight ${b.w}</span></span><div class="meter"><i style="width:${b.credit*100}%"></i></div><b class="num" style="text-align:right">${Math.round(b.credit*b.w)}</b><div class="ev">${esc(b.ev)}</div></div>`).join('')}</div>
+  </section>
+  <section class="card"><h3>Application as submitted</h3>
+    <dl class="kv"><dt>Experience</dt><dd>"${esc(c.exp.text)}"${c.exp.gloss?`<div class="faint">Translation: ${esc(c.exp.gloss)}</div>`:''}</dd>
+    <dt>Shifts</dt><dd>${esc(c.ans.shifts.join(', ')||'None selected')}</dd><dt>Can start</dt><dd>In ${c.ans.startDays} days</dd><dt>Certificates</dt><dd>${esc(c.ans.cert||'None listed')}</dd><dt>Site language</dt><dd>${esc(r.siteLang)}: ${c.ans.lang}</dd></dl>
+    <div><div class="eyebrow" style="margin-bottom:6px">Hidden from the agent when scoring</div><div class="chips">${EXCLUDED.map(x=>`<span class="chip x">${x}</span>`).join('')}</div></div>
+  </section>
+  <section class="card"><h3>Timeline</h3><div class="tl">${ev.map(e=>`<div class="ev ${e.actorType}"><div><b>${esc(e.event)}</b> <span class="faint">by ${esc(e.actor)}</span></div><div class="muted">${esc(e.detail)}</div><div class="w mono">${fmtT(e.t)} · ${e.id}</div></div>`).join('')}</div></section>`;
+}
+function openDrawer(id){UI.drawer=id;$('#drawer').innerHTML=candDetail(C(id));$('#drawer').hidden=false;$('#drawerBg').hidden=false}
+function refreshDrawer(){if(UI.drawer&&!$('#drawer').hidden)$('#drawer').innerHTML=candDetail(C(UI.drawer))}
+function closeDrawer(){UI.drawer=null;UI.candPanel=null;$('#drawer').hidden=true;$('#drawerBg').hidden=true}
+
+function vReview(){
+  const q=queueCounts();
+  const tabs=[['score','Below the line',q.score],['confirm','Closures to confirm',q.confirm],['sample','Second looks',q.sample],['requests','Candidate requests',q.requests]];
+  let body='';const act=canAct();
+  if(UI.reviewTab==='score'){
+    const L=S.cands.filter(c=>c.status==='review').sort((a,b)=>a.dueBy-b.dueBy);
+    body=`<div class="row-actions"><span class="faint">Oldest first. Select rows to act on several at once. Each decision is logged under your name.</span></div>
+    <div class="row-actions"><button class="btn btn-sm btn-pri" data-act="bulkAdvance" ${act?'':'disabled'}>Invite selected</button>
+    <select id="bulk-reason" aria-label="Reason for rejection">${Object.entries(REASONS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}</select>
+    <button class="btn btn-sm btn-bad" data-act="bulkReject" ${act?'':'disabled'}>Reject selected with this reason</button><span class="faint num">${UI.sel.size} selected</span></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th><input type="checkbox" data-in="selAll" aria-label="Select all"></th><th>Candidate</th><th>Job</th><th>Score</th><th>Summary</th><th class="r">Due</th></tr></thead><tbody>
+    ${L.map(c=>{const r=R(c.req);const top=[...c.br].sort((a,b)=>b.credit*b.w-a.credit*a.w);return `<tr><td><input type="checkbox" data-in="sel" data-id="${c.id}" ${UI.sel.has(c.id)?'checked':''} aria-label="Select ${esc(c.name)}"></td><td class="click" data-act="openCand" data-id="${c.id}" style="cursor:pointer"><b>${esc(c.name)}</b><div class="mono faint">${c.id}</div></td><td>${esc(r.title)} ${coTag(r.country)}</td><td>${sbar(c.score,c.threshold)}</td><td class="muted" style="max-width:340px">Strongest: ${esc(top[0].label.toLowerCase())}. Weakest: ${esc(top[top.length-1].label.toLowerCase())}. ${esc(c.exp.gloss||c.exp.text).slice(0,90)}${(c.exp.gloss||c.exp.text).length>90?'...':''}</td><td class="r num">${c.dueBy<S.now?`<span class="pill p-bad">${dur(S.now-c.dueBy)} late</span>`:`in ${dur(c.dueBy-S.now)}`}</td></tr>`}).join('')||`<tr><td colspan="6" class="empty">Queue is clear.</td></tr>`}
+    </tbody></table></div>`;
+  }
+  if(UI.reviewTab==='confirm'){
+    const L=S.cands.filter(c=>c.status==='confirm');
+    body=`<div class="note">In Germany a person confirms every closure, including ones where the candidate's own answer fails a hard requirement. The candidate already had 24 hours to correct the answer.</div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Candidate</th><th>Job</th><th>Requirement not met</th><th>Candidate answer</th><th></th></tr></thead><tbody>
+    ${L.map(c=>{const f=c.ko.filter(k=>!k.pass);return `<tr><td class="click" data-act="openCand" data-id="${c.id}" style="cursor:pointer"><b>${esc(c.name)}</b><div class="mono faint">${c.id}</div></td><td>${esc(R(c.req).title)}</td><td>${f.map(k=>esc(k.label)).join('<br>')}</td><td>${f.map(k=>esc(k.answer)).join('<br>')}</td><td class="r"><div class="row-actions" style="justify-content:flex-end"><button class="btn btn-sm btn-bad" data-act="confirmReject" data-id="${c.id}" ${act?'':'disabled'}>Confirm closure</button><button class="btn btn-sm" data-act="toReview" data-id="${c.id}" ${act?'':'disabled'}>Send to review</button></div></td></tr>`}).join('')||`<tr><td colspan="5" class="empty">Nothing waiting.</td></tr>`}
+    </tbody></table></div>`;
+  }
+  if(UI.reviewTab==='sample'){
+    const L=S.samples.slice().sort((a,b)=>(a.status==='open'?0:1)-(b.status==='open'?0:1)||b.t-a.t);
+    const done=S.samples.filter(s=>s.status!=='open');
+    body=`<div class="note">One in ten rule-based closures is picked at random for a person to check. Agreement so far: <b>${done.length?pct(done.filter(s=>s.status==='agree').length,done.length):100}%</b> of ${done.length} checked. A disagreement reopens the application and is counted against the rule.</div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Sample</th><th>Candidate</th><th>Rule that closed it</th><th>Closed</th><th>Result</th></tr></thead><tbody>
+    ${L.map(s=>{const c=C(s.cid);const f=c.ko.filter(k=>!k.pass);return `<tr><td class="mono">${s.id}</td><td class="click" data-act="openCand" data-id="${c.id}" style="cursor:pointer"><b>${esc(c.name)}</b><div class="mono faint">${c.id}</div></td><td>${f.map(k=>esc(k.label)+': '+esc(k.answer)).join('<br>')||'Corrected later'}</td><td class="faint">${fmtT(s.t)}</td><td>${s.status==='open'?`<div class="row-actions"><button class="btn btn-sm" data-act="sampleAgree" data-id="${s.id}" ${act?'':'disabled'}>Rule was right</button><button class="btn btn-sm btn-bad" data-act="sampleDisagree" data-id="${s.id}" ${act?'':'disabled'}>Reopen</button></div>`:s.status==='agree'?'<span class="pill p-good">Agreed</span>':'<span class="pill p-bad">Reopened</span>'}</td></tr>`}).join('')||`<tr><td colspan="5" class="empty">No samples yet. Advance the clock to close correction windows.</td></tr>`}
+    </tbody></table></div>`;
+  }
+  if(UI.reviewTab==='requests'){
+    const L=S.requests.slice().sort((a,b)=>(a.status==='open'?0:1)-(b.status==='open'?0:1)||a.due-b.due);
+    const lab={human_review:'Review by a person',access:'Copy of my data',deletion:'Delete my data'};
+    body=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Request</th><th>Candidate</th><th>Type</th><th>Message</th><th class="r">Due</th><th>Action</th></tr></thead><tbody>
+    ${L.map(q=>{const c=C(q.cid);let a='';
+      if(q.status==='open'&&q.type==='human_review')a=`<button class="btn btn-sm" data-act="reqUphold" data-id="${q.id}" ${act?'':'disabled'}>Decision stands</button><button class="btn btn-sm btn-pri" data-act="reqReopen" data-id="${q.id}" ${act?'':'disabled'}>Reopen</button>`;
+      if(q.status==='open'&&q.type==='deletion')a=`<button class="btn btn-sm btn-bad" data-act="reqDelete" data-id="${q.id}" ${act?'':'disabled'}>Delete personal data</button><button class="btn btn-sm" data-act="reqRetain" data-id="${q.id}" ${act?'':'disabled'}>Keep until ${fmtD(c.retainUntil||S.now)}</button>`;
+      if(q.status!=='open')a=`<span class="pill p-good">Done</span> <span class="faint">${esc(q.outcome||'')}</span>`;
+      return `<tr><td class="mono">${q.id}</td><td class="click" data-act="openCand" data-id="${c.id}" style="cursor:pointer"><b>${esc(c.name)}</b><div class="mono faint">${c.id}</div></td><td>${lab[q.type]}</td><td class="muted" style="max-width:280px">${esc(q.text)||'<span class="faint">No message</span>'}</td><td class="r num">${q.status==='open'?(q.due<S.now?'<span class="pill p-bad">Overdue</span>':fmtD(q.due)):'-'}</td><td><div class="row-actions">${a}</div></td></tr>`}).join('')||`<tr><td colspan="6" class="empty">No requests.</td></tr>`}
+    </tbody></table></div>`;
+  }
+  return `
+  <div class="page-h"><div><div class="eyebrow">Step 04</div><h1>Review queue</h1></div><p class="muted">Everything the agent cannot settle on a clear rule lands here. Recruiters clear it in batches, with the evidence summarised, inside the 48-hour promise.</p></div>
+  <section class="card">
+    <div class="tabs" role="tablist">${tabs.map(([k,l,n])=>`<button class="tab" role="tab" aria-selected="${UI.reviewTab===k}" data-act="rtab" data-id="${k}">${l} <span class="badge" style="${n?'':'background:var(--surface-2);color:var(--ink-3)'}">${n}</span></button>`).join('')}</div>
+    ${body}
+  </section>`;
+}
+
+function vMessages(){
+  const L=S.cands.filter(c=>c.thread.length&&(UI.msgReq==='all'||c.req===UI.msgReq)).sort((a,b)=>b.thread[b.thread.length-1].t-a.thread[a.thread.length-1].t);
+  if(!UI.msgC||!C(UI.msgC))UI.msgC=(L.find(c=>c.status==='invited')||L[0]||{}).id;
+  const c=C(UI.msgC);
+  const r=c?R(c.req):S.reqs[0];
+  let replies='';
+  if(c&&!c.optedOut&&canAct()){
+    const de=r.country==='DE';const o=[];
+    if(c.status==='invited'){c.offered.forEach((s,i)=>o.push([String(i+1),`Choose ${i+1}`]));o.push(['4','Other times'])}
+    if(c.status==='booked'){o.push(['R','Reschedule']);o.push(['C','Cancel'])}
+    if(c.status==='correction')o.push([de?'ÄNDERN':'CHANGE','Correct my answer']);
+    o.push(['STOP','Stop messages']);
+    replies=`<div class="replies"><span class="lab">Reply as the candidate</span>${o.map(([v,l])=>`<button class="btn btn-sm" data-act="reply" data-id="${c.id}" data-v="${esc(v)}">${esc(v)} <span class="faint">${esc(l)}</span></button>`).join('')}</div>`;
+  } else if(c&&c.optedOut) replies=`<div class="replies"><span class="lab">Candidate opted out. A recruiter can call ${esc(c.phone)}.</span></div>`;
+  const slots=S.slots[r.id].filter(s=>s.t>S.now).slice(0,12);
+  return `
+  <div class="page-h"><div><div class="eyebrow">Step 03</div><h1>Messages and interviews</h1></div><p class="muted">Candidates in the interview band get times straight away and book by replying with a number. WhatsApp in India and Germany, SMS in the US. Quiet hours and opt-outs are respected.</p></div>
+  <div class="msg-layout">
+    <section class="card"><div class="filters"><select id="m-req" data-in="mReq" aria-label="Job"><option value="all">All jobs</option>${S.reqs.map(x=>`<option value="${x.id}" ${UI.msgReq===x.id?'selected':''}>${esc(x.title)}</option>`).join('')}</select></div>
+      <div class="list conv">${L.slice(0,80).map(x=>`<div class="it" data-act="pickMsg" data-id="${x.id}" aria-current="${x.id===UI.msgC}"><div><b>${esc(x.name)}</b> ${coTag(R(x.req).country)}<div class="faint" style="font-size:12px">${esc(x.thread[x.thread.length-1].text.slice(0,48))}...</div></div>${pill(STATUS,x.status)}</div>`).join('')}</div>
+    </section>
+    <section>${c?`<div class="phone"><div class="ph"><b>Kestrel Careers</b><span>${r.channel} · to ${esc(c.name)} · ${esc(c.phone)}</span></div>
+      <div class="body" id="thread">${c.thread.slice().sort((a,b)=>a.t-b.t).map(m=>`<div class="bub ${m.d}">${esc(m.text)}<span class="tm">${fmtT(m.t)}</span></div>`).join('')}</div>${replies}</div>`:'<div class="empty">No conversations yet.</div>'}
+    </section>
+    <section class="card slots"><div class="card-h"><h2>Interview times</h2><span class="faint">${esc(r.title)}, ${esc(r.city)}</span></div>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Time</th><th class="r">Booked</th><th>Capacity</th></tr></thead><tbody>
+      ${slots.map(s=>`<tr><td>${slotLabel(s)}</td><td class="r num">${s.booked}/${s.cap}</td><td><div class="meter"><i style="width:${s.booked/s.cap*100}%"></i></div></td></tr>`).join('')}
+      </tbody></table></div>
+      ${c?`<div class="note">Hiring manager: ${esc(r.hm)}. Reminders go 24 hours before. A no-show is offered one new time.</div><button class="btn btn-sm" data-act="openCand" data-id="${c.id}">Open ${esc(c.first)}'s application</button>`:''}
+    </section>
+  </div>`;
+}
+
+function vCandidate(){
+  const pool=S.cands.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  if(!UI.candC||!C(UI.candC))UI.candC=(S.cands.find(c=>c.status==='rejected'&&c.decision.by==='human')||S.cands[0]).id;
+  const c=C(UI.candC),r=R(c.req),p=S.policy[r.country];
+  const reqs=S.requests.filter(q=>q.cid===c.id);
+  let hero='',why='';
+  const st=c.status;
+  if(st==='rejected'){
+    hero=`<span class="pill p-bad">Application closed</span><h3>We are not moving forward with this application</h3><span class="muted">${fmtD(c.rejectedAt)}</span>`;
+    why=c.decision.by==='agent'?`<p><b>Why:</b> the role needs someone who ${esc(c.ko.filter(k=>!k.pass).map(k=>k.need).join(' and '))}. Your answer said you don't, and it was not changed within 24 hours.</p><p class="muted">This was decided by a fixed rule, not by a score. A person checks a sample of these.</p>`
+      :`<p><b>Why:</b> ${esc(c.decision.reason?REASONS[c.decision.reason].en:'A hard requirement was not met')}.</p><p class="muted">Reviewed by a recruiter on ${fmtD(c.decision.at)}.</p>`;
+  } else if(st==='review'){hero=`<span class="pill p-warn">With a recruiter</span><h3>A recruiter is looking at your application</h3><span class="muted">You will hear by ${fmtT(c.dueBy)}</span>`}
+  else if(st==='invited'){hero=`<span class="pill p-acc">Invited</span><h3>You are invited to a 15-minute interview</h3><span class="muted">Choose a time in your ${r.channel} messages</span>`}
+  else if(st==='booked'){const s=slotById(c,c.slot);hero=`<span class="pill p-good">Interview booked</span><h3>${slotLabel(s)}</h3><span class="muted">${esc(r.site)}. Bring a photo ID.</span>`}
+  else if(st==='correction'){hero=`<span class="pill p-info">Please check one answer</span><h3>One of your answers does not fit this role</h3><span class="muted">Reply CHANGE before ${fmtT(c.windowEnds)} if it was a mistake</span>`}
+  else if(st==='confirm'){hero=`<span class="pill p-warn">Being checked</span><h3>A recruiter is checking your answers</h3><span class="muted">You will hear within 24 hours</span>`}
+  else {hero=`<span class="pill">${esc((STATUS[st]||[st])[0])}</span><h3>${esc(r.title)}</h3>`}
+  const reqLab={human_review:'Review by a person',access:'Copy of my data',deletion:'Delete my data'};
+  const act=canAct();
+  return `
+  <div class="page-h"><div><div class="eyebrow">Step 05</div><h1>Candidate view</h1></div><p class="muted">What the candidate sees when they open the link in their messages. No account or password. The link is tied to their phone number and confirmed with a one-time code.</p></div>
+  <div class="filters"><label for="cand-pick" class="faint">Show as</label><select id="cand-pick" data-in="candPick">${pool.map(x=>`<option value="${x.id}" ${x.id===c.id?'selected':''}>${esc(x.name)} · ${x.id} · ${esc((STATUS[x.status]||[x.status])[0])}</option>`).join('')}</select></div>
+  <div class="grid2" style="align-items:start">
+    <div class="phone"><div class="ph"><b>Your application</b><span>${esc(r.title)} · ${esc(r.city)}</span></div>
+      <div class="status-page">
+        <div class="hero">${hero}</div>
+        ${why}
+        <div><div class="eyebrow" style="margin-bottom:6px">What we looked at</div><p class="muted">Your answers to the screening questions, the work experience you described, the shifts you can work and when you can start.</p></div>
+        <div><div class="eyebrow" style="margin-bottom:6px">What we did not use</div><p class="muted">Your name, photo, age, gender, address, gaps in your work history or the schools you went to.</p></div>
+        ${st==='rejected'?`<button class="btn btn-pri bigbtn" data-act="candReq" data-v="human_review" data-id="${c.id}" ${act&&!reqs.some(q=>q.type==='human_review')?'':'disabled'}>${reqs.some(q=>q.type==='human_review')?'Review requested':'Ask a person to review this'}</button>`:''}
+        <button class="btn bigbtn" data-act="candReq" data-v="access" data-id="${c.id}" ${act?'':'disabled'}>See all the data you hold about me</button>
+        <button class="btn btn-bad bigbtn" data-act="candReq" data-v="deletion" data-id="${c.id}" ${act&&!reqs.some(q=>q.type==='deletion'&&q.status==='open')?'':'disabled'}>Delete my data</button>
+        <p class="faint" style="font-size:12px">We keep application data for ${Math.round(p.retentionDays/30)} months after a decision, then delete it. Notice ${p.noticeVersion}.</p>
+      </div>
+    </div>
+    <section class="card"><div class="card-h"><h2>Requests from this candidate</h2></div>
+      ${reqs.length?`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>ID</th><th>Type</th><th>Status</th><th class="r">Due</th></tr></thead><tbody>${reqs.map(q=>`<tr><td class="mono">${q.id}</td><td>${reqLab[q.type]}</td><td>${q.status==='open'?'<span class="pill p-warn">Open</span>':'<span class="pill p-good">Done</span>'}</td><td class="r">${fmtD(q.due)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="faint">None yet. Use the buttons on the phone to raise one as the candidate.</p>'}
+      <div class="note">Review requests go to the recruiter queue with a 5-day target. Data copies are served instantly and logged. Deletion requests go to a person, because records may need to be kept for a set time where the law requires it. Response time in ${COUNTRY[r.country]}: ${p.dataDays} days.</div>
+      <div class="row-actions"><a class="btn btn-sm" href="#review" data-act="rtabGo" data-id="requests">Open candidate requests</a><button class="btn btn-sm" data-act="openCand" data-id="${c.id}">Recruiter's view of ${esc(c.first)}</button></div>
+    </section>
+  </div>`;
+}
+
+function liveImpact(){
+  return ['IN','US','DE'].map(co=>{
+    const L=S.cands.filter(c=>R(c.req).country===co&&c.band!=='ko');
+    const g={'Women':c=>c.demo.sex==='Woman','Men':c=>c.demo.sex==='Man','Under 40':c=>c.demo.age==='Under 40','40 and over':c=>c.demo.age==='40 and over'};
+    const sel=c=>c.decision&&c.decision.outcome==='advance';
+    const rows=[];[['Women','Men'],['Under 40','40 and over']].forEach(pr=>{const rs=pr.map(k=>{const m=L.filter(g[k]);return {k,n:m.length,r:m.length?m.filter(sel).length/m.length:0}});const mx=Math.max(...rs.map(x=>x.r));rs.forEach(x=>rows.push(Object.assign(x,{ratio:mx?x.r/mx:1})))});
+    return {co,rows};
+  });
+}
+function vFairness(){
+  const bt=backtest();
+  const mv=UI.fairModel;
+  const imp=co=>bt.impact(mv==='v1.2'?'s12':'s13',co);
+  const b=mv==='v1.2'?bt.b12:bt.b13;
+  const lowP=x=>(x/bt.hires*100).toFixed(1);
+  const gates=co=>{
+    const ir=bt.impact('s13',co);const minR=Math.min(...ir.map(x=>x.ratio));
+    return [
+      ['Past hires scoring below 50 is 2% or less',`${lowP(bt.low13)}%`,bt.low13/bt.hires<=0.02],
+      ['Impact ratio 0.80 or higher for every group',minR.toFixed(2),minR>=0.8],
+      ['Four weeks of shadow running, recruiters agree with 95% of suggested rejections','Starts after peak',false],
+      ['Customer legal sign-off for score-based closures','Not requested',false]
+    ].concat(co==='DE'?[['Country rules allow it','A person confirms every closure in Germany',false]]:[]);
+  };
+  const hm={id:'H-25-0871',exp:{type:'transferable',years:6,months:0,text:"Ran the stockroom of my family's grocery shop for 6 years. Received stock from distributors, kept counts, checked expiry dates"},ans:{shifts:['Morning','Evening'],startDays:7,lang:'yes',cert:null},certCredit:0};
+  const h12=scoreWith(hm,CRITERIA,'v1.2'),h13=scoreWith(hm,CRITERIA,'v1.3');
+  const live=liveImpact();
+  const humanRev=S.log.filter(e=>e.actorType==='human'&&(e.event==='Advanced by recruiter'||e.event==='Rejected by recruiter'));
+  const advBelow=humanRev.filter(e=>e.event==='Advanced by recruiter').length;
+  return `
+  <div class="page-h"><div><div class="eyebrow">Step 06</div><h1>Fairness and quality</h1></div><p class="muted">Checks that run before and after go-live. Score-based closures stay switched off in every country until all of its gates pass.</p></div>
+  <section class="card"><div class="card-h"><h2>Gates for closing applications on score</h2><span class="faint">Checked per country, reviewed monthly</span></div>
+    <div class="grid3">${['IN','US','DE'].map(co=>`<div><h3 style="margin-bottom:6px">${COUNTRY[co]} <span class="pill p-bad" style="margin-left:6px">Off</span></h3>${gates(co).map(([l,v,ok])=>`<div class="gate"><span class="dot ${ok?'good':'warn'}"></span><span>${esc(l)}<div class="faint">${esc(v)}</div></span><span class="pill ${ok?'p-good':'p-warn'}">${ok?'Pass':'Open'}</span></div>`).join('')}</div>`).join('')}</div>
+  </section>
+  <div class="grid2">
+    <section class="card"><div class="card-h"><h2>Backtest on last season's hires</h2>
+      <div class="tabs" role="tablist" style="border:0">${['v1.2','v1.3'].map(v=>`<button class="tab" role="tab" aria-selected="${mv===v}" data-act="fairModel" data-id="${v}">Model ${v}${v==='v1.3'?' (live)':' (pilot)'}</button>`).join('')}</div></div>
+      <p class="muted">${bt.hires.toLocaleString()} people hired from ${bt.pool.toLocaleString()} applications in the 2025 peak, rescored as if they applied today.</p>
+      <div class="stack" aria-label="Hires by band">${[['adv','var(--good)'],['rev','var(--warn)'],['low','var(--bad)']].map(([k,col])=>`<i style="width:${b[k]/bt.hires*100}%;background:${col}"></i>`).join('')}</div>
+      <div class="legend"><span><i style="background:var(--good)"></i>Interview band ${pct(b.adv,bt.hires)}%</span><span><i style="background:var(--warn)"></i>Review, 50 to 69: ${pct(b.rev,bt.hires)}%</span><span><i style="background:var(--bad)"></i>Below 50: ${lowP(b.low)}%</span></div>
+      <div class="note ${mv==='v1.2'?'warn':'good'}">${mv==='v1.2'?`Under the pilot model, ${b.low} past hires scored below 50. If the bottom of the pile had been closed automatically, these people would never have reached an interview.`:`With transferable-skills mapping, ${b.low} past hires score below 50, down from ${bt.b12.low}. Still not low enough to close anything on score alone.`}</div>
+    </section>
+    <section class="card"><div class="card-h"><h2>Pilot feedback: hire ${hm.id}</h2><span class="faint">Warehouse Associate, Pune. Rated a top performer in 2026</span></div>
+      <p>"${esc(hm.exp.text)}"</p>
+      <div class="hbars">
+        <div class="r"><span>Model v1.2</span><div class="meter"><i style="width:${h12.score}%;background:var(--bad)"></i></div><b class="num">${h12.score}</b></div>
+        <div class="r"><span>Model v1.3</span><div class="meter"><i style="width:${h13.score}%;background:var(--good)"></i></div><b class="num">${h13.score}</b></div>
+      </div>
+      <p class="muted">The pilot model gave almost no credit for experience that did not use a warehouse job title. Had the pilot closed everything below 60 automatically, this person would never have been interviewed. v1.3 maps described duties to skills, and the hiring manager's feedback is now a test case that every model release must pass.</p>
+    </section>
+  </div>
+  <section class="card"><div class="card-h"><h2>Impact ratios at the interview line</h2><span class="faint">Historic pool, model ${mv}. Self-ID data is voluntary, stored apart and never used in scoring</span></div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Country</th><th>Group</th><th class="r">Applicants</th><th class="r">Reach interview line</th><th class="r">Impact ratio</th><th></th></tr></thead><tbody>
+    ${['IN','US','DE'].map(co=>imp(co).map((x,i)=>`<tr><td>${i===0?`<b>${COUNTRY[co]}</b>`:''}</td><td>${x.g}</td><td class="r num">${x.n.toLocaleString()}</td><td class="r num">${(x.rate*100).toFixed(1)}%</td><td class="r num"><b>${x.ratio.toFixed(2)}</b></td><td>${x.ratio<0.8?'<span class="pill p-bad">Below 0.80</span>':'<span class="pill p-good">OK</span>'}</td></tr>`).join('')).join('')}
+    </tbody></table></div>
+    <div class="note">${mv==='v1.3'?'Under v1.3, applicants under 40 fall below 0.80 in some countries. First-job applicants get little credit for experience. The next criteria review with hiring managers will test a lower experience weight for entry-level roles. This is one reason closing on score stays off.':'The pilot model balanced age groups better, but it missed far more of the people who were later hired. Neither model is ready to close applications on score.'}</div>
+  </section>
+  <div class="grid2">
+    <section class="card"><div class="card-h"><h2>Live outcomes this week</h2><span class="faint">Share moved to interview, after requirements</span></div>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Country</th><th>Group</th><th class="r">n</th><th class="r">Moved on</th><th class="r">Ratio</th></tr></thead><tbody>
+      ${live.map(l=>l.rows.map((x,i)=>`<tr><td>${i===0?COUNTRY[l.co]:''}</td><td>${x.k}</td><td class="r num">${x.n}</td><td class="r num">${(x.r*100).toFixed(0)}%</td><td class="r num">${x.n<30?'<span class="faint">too few</span>':x.ratio<0.8?`<span class="pill p-warn">${x.ratio.toFixed(2)}</span>`:x.ratio.toFixed(2)}</td></tr>`).join('')).join('')}
+      </tbody></table></div>
+    </section>
+    <section class="card"><div class="card-h"><h2>People and the agent</h2></div>
+      <dl class="kv"><dt>Recruiter decisions on applications below the line</dt><dd class="num">${humanRev.length}</dd>
+      <dt>Of those, invited anyway</dt><dd class="num">${advBelow} (${pct(advBelow,humanRev.length)}%)</dd>
+      <dt>Second-look checks done</dt><dd class="num">${S.samples.filter(s=>s.status!=='open').length}, agreement ${(()=>{const d=S.samples.filter(s=>s.status!=='open');return d.length?pct(d.filter(s=>s.status==='agree').length,d.length):100})()}%</dd>
+      <dt>Candidates who corrected an answer</dt><dd class="num">${S.log.filter(e=>e.event==='Candidate corrected an answer').length}</dd>
+      <dt>Requests for human review</dt><dd class="num">${S.requests.filter(q=>q.type==='human_review').length}</dd></dl>
+      <div class="note">Recruiters inviting people below the line is a signal, not a problem. It feeds the next criteria review with the hiring manager.</div>
+    </section>
+  </div>`;
+}
+
+function vAudit(){
+  const f=UI.auditF;
+  const L=S.log.filter(e=>(f.co==='all'||e.co===f.co)&&(f.actor==='all'||e.actorType===f.actor)&&(!f.q||(e.cid||'').toLowerCase().includes(f.q.toLowerCase())||e.event.toLowerCase().includes(f.q.toLowerCase()))).sort((a,b)=>b.t-a.t);
+  return `
+  <div class="page-h"><div><div class="eyebrow">Step 07</div><h1>Audit trail</h1></div><p class="muted">Every action by the agent, a person or the candidate is written here and cannot be edited. Each application has a full decision record.</p></div>
+  <div class="grid2">
+    <section class="card"><div class="card-h"><h2>Auditor pack</h2><span class="faint">Built from live records</span></div>
+      <ul class="muted" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+        <li>Criteria for each job, every version, who approved it</li>
+        <li>Model versions, backtest and impact ratio results</li>
+        <li>Country rules, notices shown to candidates, sign-offs</li>
+        <li>Counts of decisions by agent rule, by person, by score (zero)</li>
+        <li>Second-look results and candidate requests with response times</li>
+        <li>Sample decision records</li>
+      </ul>
+      <div class="row-actions"><button class="btn btn-pri" data-act="pack">Build auditor pack</button><button class="btn" data-act="csv">Decision log as CSV</button></div>
+    </section>
+    <section class="card"><div class="card-h"><h2>Summary</h2></div>
+      <dl class="kv"><dt>Events logged</dt><dd class="num">${S.log.length.toLocaleString()}</dd>
+      <dt>By the agent</dt><dd class="num">${S.log.filter(e=>e.actorType==='agent').length}</dd><dt>By people</dt><dd class="num">${S.log.filter(e=>e.actorType==='human').length}</dd><dt>By candidates</dt><dd class="num">${S.log.filter(e=>e.actorType==='candidate').length}</dd>
+      <dt>Closures on score alone</dt><dd class="num"><b>0</b></dd><dt>Retention</dt><dd>India 12 months, US 24 months, Germany 6 months after decision</dd></dl>
+    </section>
+  </div>
+  <section class="card">
+    <div class="filters">
+      <select id="a-co" data-in="aCo" aria-label="Country"><option value="all">All countries</option>${['IN','US','DE'].map(co=>`<option value="${co}" ${f.co===co?'selected':''}>${COUNTRY[co]}</option>`).join('')}</select>
+      <select id="a-actor" data-in="aActor" aria-label="Actor"><option value="all">Everyone</option>${[['agent','Agent'],['human','People'],['candidate','Candidates'],['system','System rules']].map(([k,l])=>`<option value="${k}" ${f.actor===k?'selected':''}>${l}</option>`).join('')}</select>
+      <input type="text" id="a-q" data-in="aQ" placeholder="Candidate ID or event" value="${esc(f.q)}">
+      <span class="faint num">${L.length} events</span>
+    </div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Time</th><th>Event</th><th>Candidate</th><th>By</th><th>Detail</th><th>Versions</th></tr></thead><tbody>
+    ${L.slice(0,200).map(e=>`<tr ${e.cid?`class="click" data-act="record" data-id="${e.cid}"`:''}><td class="mono faint" style="white-space:nowrap">${fmtT(e.t)}</td><td><b>${esc(e.event)}</b></td><td class="mono">${e.cid||'-'}</td><td><span class="pill ${e.actorType==='agent'?'p-acc':e.actorType==='human'?'p-info':e.actorType==='candidate'?'p-warn':''}">${esc(e.actor)}</span></td><td class="muted" style="min-width:220px">${esc(e.detail)}</td><td class="mono faint" style="white-space:nowrap">${e.cv?'c'+e.cv+' · ':''}${e.mv}</td></tr>`).join('')}
+    </tbody></table></div>
+    ${L.length>200?`<p class="faint">Showing the latest 200. Use filters or the CSV export for more.</p>`:''}
+  </section>`;
+}
+
+function vRules(){
+  const admin=isAdmin();
+  return `
+  <div class="page-h"><div><div class="eyebrow">Step 08</div><h1>Country rules</h1></div><p class="muted">How much the agent may do on its own in each country. Only a TA admin can change these, and every change is logged.</p></div>
+  ${admin?'':`<div class="note warn">You are signed in as ${esc(me().name)}. Switch to Sam Okafor, TA admin, to change country rules.</div>`}
+  <div class="grid3">${['IN','US','DE'].map(co=>{const p=S.policy[co];return `<section class="card">
+    <div class="card-h"><h2>${COUNTRY[co]}</h2><span class="mono faint">notice ${p.noticeVersion}</span></div>
+    <label class="switch"><div><div>Invite the interview band automatically</div><div class="d">Candidates at or above the line get times straight away</div></div><input type="checkbox" data-in="pol" data-co="${co}" data-k="autoInvite" ${p.autoInvite?'checked':''} ${admin?'':'disabled'}></label>
+    <label class="switch"><div><div>Close applications that fail a stated requirement</div><div class="d">${co==='DE'?'Off: a person confirms every closure':'After a 24-hour correction window, with 10% second looks'}</div></div><input type="checkbox" data-in="pol" data-co="${co}" data-k="autoRejectKO" ${p.autoRejectKO?'checked':''} ${admin&&co!=='DE'?'':'disabled'}></label>
+    <label class="switch"><div><div>Close applications on score</div><div class="d">Locked until the gates in Fairness and quality pass</div></div><input type="checkbox" disabled></label>
+    <dl class="kv" style="padding-top:6px">
+      <dt>Correction window</dt><dd>${p.correctionHours} hours</dd>
+      <dt>Recruiter decision</dt><dd>Within ${p.slaHours} hours</dd>
+      <dt>Second-look sample</dt><dd>${Math.round(p.sampleRate*100)}% of rule closures</dd>
+      <dt>Data requests</dt><dd>Answered within ${p.dataDays} days</dd>
+      <dt>Keep records for</dt><dd>${Math.round(p.retentionDays/30)} months after decision</dd>
+      <dt>Quiet hours</dt><dd>${p.quiet}, site time</dd>
+      <dt>Channel</dt><dd>${co==='US'?'SMS':'WhatsApp, SMS fallback'}</dd>
+    </dl>
+    <div><div class="eyebrow" style="margin-bottom:4px">Sign-offs on file</div>${p.signoffs.map(([k,v,ok])=>`<div class="gate"><span class="dot ${ok?'good':'warn'}"></span><span>${esc(k)}<div class="faint">${esc(v)}</div></span><span></span></div>`).join('')}</div>
+  </section>`}).join('')}</div>`;
+}
+
+/* ---------------- modal / toast ---------------- */
+function modal(title,body,content){
+  $('#modal').innerHTML=`<div class="card-h"><h2>${esc(title)}</h2><button class="btn btn-sm" data-act="closeModal">Close</button></div>${body?`<div class="muted">${body}</div>`:''}${content!=null?`<textarea class="code" id="mtext" rows="18" readonly>${esc(content)}</textarea><div class="row-actions"><button class="btn btn-pri" data-act="copy">Copy</button><span class="faint" id="copymsg"></span></div>`:''}`;
+  $('#modal').hidden=false;$('#modalBg').hidden=false;
+}
+function closeModal(){$('#modal').hidden=true;$('#modalBg').hidden=true}
+let tt=null;
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,3600)}
+
+function decisionRecord(c){
+  const r=R(c.req),p=S.policy[r.country];
+  return {
+    record_id:'DR-'+c.id.slice(2),candidate_ref:c.id,requisition:{id:r.id,title:r.title,site:r.site,country:r.country},
+    received_at:iso(c.receivedAt),first_reply_at:iso(c.ackAt),notice_version:p.noticeVersion,channel:r.channel,
+    criteria_version:c.critV,model_version:c.modelV,
+    inputs_used:['screening answers','described work experience','shift availability','start date','certificates','site language answer'],
+    inputs_excluded:EXCLUDED,
+    hard_requirements:c.ko.map(k=>({requirement:k.label,candidate_answer:k.answer,met:k.pass})),
+    score:{value:c.score,interview_line:c.threshold,breakdown:c.br.map(b=>({criterion:b.label,weight:b.w,credit:+b.credit.toFixed(2),points:Math.round(b.credit*b.w),evidence:b.ev}))},
+    band:c.band,status:c.status,
+    decision:c.decision?{outcome:c.decision.outcome,decided_by:c.decision.by==='agent'?'automated rule':'person',actor:c.decision.actor,basis:c.decision.basis,reason:c.decision.reason?REASONS[c.decision.reason].label:null,at:iso(c.decision.at)}:null,
+    messages_sent:c.thread.filter(m=>m.d==='out').length,messages_received:c.thread.filter(m=>m.d==='in').length,opted_out:c.optedOut,
+    candidate_requests:S.requests.filter(q=>q.cid===c.id).map(q=>({id:q.id,type:q.type,raised:iso(q.t),due:iso(q.due),status:q.status,outcome:q.outcome})),
+    events:S.log.filter(e=>e.cid===c.id).sort((a,b)=>a.t-b.t).map(e=>({id:e.id,at:iso(e.t),event:e.event,by:e.actor,actor_type:e.actorType,detail:e.detail})),
+    retain_until:c.retainUntil?iso(c.retainUntil):'decision pending'
+  };
+}
+function auditorPack(){
+  const k=kpis();const bt=backtest();
+  return {
+    generated_at:iso(S.now),workspace:'Kestrel Retail & Logistics',generated_by:me().name,
+    scope:{applications:k.n,period:`${fmtD(Math.min(...S.cands.map(c=>c.receivedAt)))} to ${fmtD(S.now)}`},
+    decisions:{invited_by_agent_rule:k.autoAdv,invited_by_person:k.humAdv,closed_by_requirement_rule:k.ruleRej,closed_by_person:k.humRej,closed_on_score_alone:0,awaiting_person:k.review+k.confirm},
+    speed:{median_first_reply:dur(k.ack),decided_within_48h_pct:k.within},
+    criteria:S.reqs.map(r=>({job:r.id,title:r.title,current_version:r.criteriaVersion,interview_line:r.threshold,criteria:r.criteria.map(c=>({criterion:c.label,weight:c.w})),hard_requirements:r.knockouts.filter(x=>x.on).map(x=>x.label),history:r.history.map(h=>({version:h.v,at:iso(h.t),published_by:h.by,approved_by:h.hm,note:h.note}))})),
+    excluded_from_scoring:EXCLUDED,
+    model:{live:'v1.3',backtest:{hires:bt.hires,below_50_v12:bt.low12,below_50_v13:bt.low13},impact_ratios_v13:['IN','US','DE'].map(co=>({country:co,groups:bt.impact('s13',co).map(x=>({group:x.g,applicants:x.n,rate:+x.rate.toFixed(3),ratio:+x.ratio.toFixed(2)}))}))},
+    country_rules:Object.fromEntries(Object.entries(S.policy).map(([co,p])=>[co,{auto_invite:p.autoInvite,auto_close_failed_requirement:p.autoRejectKO,close_on_score:false,correction_window_h:p.correctionHours,recruiter_sla_h:p.slaHours,second_look_rate:p.sampleRate,data_request_days:p.dataDays,retention_days:p.retentionDays,notice:p.noticeVersion,signoffs:p.signoffs.map(s=>({item:s[0],status:s[1]}))}])),
+    second_looks:{checked:S.samples.filter(s=>s.status!=='open').length,agreed:S.samples.filter(s=>s.status==='agree').length,open:S.samples.filter(s=>s.status==='open').length},
+    candidate_requests:S.requests.map(q=>({id:q.id,type:q.type,raised:iso(q.t),due:iso(q.due),status:q.status,resolved:q.resolvedAt?iso(q.resolvedAt):null})),
+    sample_records:[S.cands.find(c=>c.decision&&c.decision.by==='agent'&&c.status==='rejected'),S.cands.find(c=>c.decision&&c.decision.by==='human'&&c.status==='rejected'),S.cands.find(c=>c.decision&&c.decision.outcome==='advance')].filter(Boolean).map(decisionRecord)
+  };
+}
+function csv(){
+  const rows=[['event_id','time_utc','candidate','job','country','event','actor_type','actor','detail','criteria_version','model_version']];
+  S.log.slice().sort((a,b)=>a.t-b.t).forEach(e=>rows.push([e.id,iso(e.t),e.cid||'',e.req||'',e.co||'',e.event,e.actorType,e.actor,e.detail,e.cv||'',e.mv]));
+  return rows.map(r=>r.map(v=>/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:v).join(',')).join('\n');
+}
+
+/* ---------------- actions ---------------- */
+function tick(){S.now+=Math.floor(30+rand()*60)*1000;return S.now}
+function need(){if(!canAct()){toast('Read-only access. Switch user at the top to make changes.');return false}return true}
+const ACT={
+  closeDrawer:()=>closeDrawer(),
+  closeModal:()=>closeModal(),
+  openCand:el=>openDrawer(el.dataset.id),
+  pickJob:el=>{UI.jobReq=el.dataset.id;UI.draft=null;render()},
+  resetDraft:()=>{UI.draft=null;render()},
+  publishCriteria:()=>{
+    if(!need())return;const r=R(UI.jobReq),d=UI.draft;const t=tick();const u=me();
+    r.criteria=d.criteria.map(k=>Object.assign({},k));r.knockouts=d.knockouts.map(k=>Object.assign({},k));r.threshold=d.threshold;r.criteriaVersion++;
+    r.history.push({v:r.criteriaVersion,t,by:u.name,hm:r.hm,note:d.note.trim()});
+    log(t,null,`Criteria v${r.criteriaVersion} published`,'human',u.name,`${r.title}. ${d.note.trim()} Approved by ${r.hm}.`,{req:r.id});
+    let moved=0,cleared=0;
+    S.cands.filter(c=>c.req===r.id).forEach(c=>{
+      if(c.status==='review'){const before=c.status;screen(c,t+5e3);if(c.status!==before)moved++;else c.dueBy=c.receivedAt+S.policy[r.country].slaHours*H}
+      else if(c.status==='correction'&&koWith(c,r.knockouts).every(k=>k.pass)){screen(c,t+5e3);cleared++}
+    });
+    UI.draft=null;render();toast(`Published v${r.criteriaVersion}. ${moved} moved to interview, ${cleared} cleared a requirement.`);
+  },
+  advance:el=>{if(!need())return;const c=C(el.dataset.id);humanAdvance(c,tick(),me());render();refreshDrawer();toast(`${c.name} invited. Times sent by ${R(c.req).channel}.`)},
+  showReject:el=>{UI.candPanel=el.dataset.id;refreshDrawer()},
+  cancelReject:()=>{UI.candPanel=null;refreshDrawer()},
+  doReject:el=>{if(!need())return;const c=C(el.dataset.id);const reason=$('#rj-reason').value,note=$('#rj-note').value.trim();reject(c,tick(),'human',me().name,'Recruiter review',{reason,note});UI.candPanel=null;render();refreshDrawer();toast(`${c.name} notified with the reason and a review link.`)},
+  confirmReject:el=>{if(!need())return;const c=C(el.dataset.id);humanConfirm(c,tick(),me());render();refreshDrawer();toast('Closure confirmed and logged under your name.')},
+  toReview:el=>{if(!need())return;const c=C(el.dataset.id);const t=tick();c.status='review';c.band='review';c.dueBy=t+24*H;log(t,c,'Sent to recruiter review','human',me().name,'Closure not confirmed. Full review requested.');render();refreshDrawer();toast('Moved to the review queue.')},
+  rtab:el=>{UI.reviewTab=el.dataset.id;UI.sel.clear();render()},
+  rtabGo:el=>{UI.reviewTab=el.dataset.id},
+  bulkAdvance:()=>{if(!need())return;if(!UI.sel.size){toast('Select at least one application first.');return}const u=me();let n=0;UI.sel.forEach(id=>{const c=C(id);if(c&&c.status==='review'){humanAdvance(c,tick(),u);n++}});UI.sel.clear();render();toast(`${n} invited to interview.`)},
+  bulkReject:()=>{if(!need())return;if(!UI.sel.size){toast('Select at least one application first.');return}const u=me();const reason=$('#bulk-reason').value;let n=0;UI.sel.forEach(id=>{const c=C(id);if(c&&c.status==='review'){reject(c,tick(),'human',u.name,'Recruiter review, batch',{reason});n++}});UI.sel.clear();render();toast(`${n} rejected. Each candidate gets the reason and a review link.`)},
+  sampleAgree:el=>{if(!need())return;const s=S.samples.find(x=>x.id===el.dataset.id);s.status='agree';log(tick(),C(s.cid),'Second look: rule was right','human',me().name,`Sample ${s.id}.`);render()},
+  sampleDisagree:el=>{if(!need())return;const s=S.samples.find(x=>x.id===el.dataset.id);const c=C(s.cid);const t=tick();s.status='disagree';c.status='review';c.band='review';c.dueBy=t+24*H;log(t,c,'Second look: reopened','human',me().name,`Sample ${s.id}. Rule outcome overturned, counted against the rule.`);out(c,t+10e3,tpl(c,'reopened'));render();toast('Application reopened and the candidate told.')},
+  reqUphold:el=>{if(!need())return;const q=S.requests.find(x=>x.id===el.dataset.id);const c=C(q.cid);const t=tick();q.status='done';q.resolvedAt=t;q.resolvedBy=me().name;q.outcome='Decision stands';out(c,t,tpl(c,'review_upheld'));log(t,c,'Human review: decision stands','human',me().name,`Request ${q.id}.`);render()},
+  reqReopen:el=>{if(!need())return;const q=S.requests.find(x=>x.id===el.dataset.id);const c=C(q.cid);const t=tick();q.status='done';q.resolvedAt=t;q.resolvedBy=me().name;q.outcome='Reopened';c.status='review';c.band='review';c.dueBy=t+24*H;out(c,t,tpl(c,'reopened'));log(t,c,'Human review: reopened','human',me().name,`Request ${q.id}. Back in the review queue.`);render();toast('Reopened. It is now in the review queue.')},
+  reqDelete:el=>{if(!need())return;const q=S.requests.find(x=>x.id===el.dataset.id);const c=C(q.cid);const t=tick();q.status='done';q.resolvedAt=t;q.resolvedBy=me().name;q.outcome='Personal data deleted';c.name='Deleted candidate';c.first='Candidate';c.last='';c.phone='deleted';c.exp.text='[deleted]';c.exp.gloss=null;c.thread=[];log(t,c,'Personal data deleted','human',me().name,`Request ${q.id}. Pseudonymous decision record kept without contact details or free text.`);render();toast('Personal data deleted. The pseudonymous record stays for audit.')},
+  reqRetain:el=>{if(!need())return;const q=S.requests.find(x=>x.id===el.dataset.id);const c=C(q.cid);const t=tick();q.status='done';q.resolvedAt=t;q.resolvedBy=me().name;q.outcome=`Kept until ${fmtD(c.retainUntil||t)}, then deleted`;log(t,c,'Deletion scheduled','human',me().name,`Request ${q.id}. Retention period applies. Candidate told the date.`);render()},
+  reply:el=>{if(!need())return;const c=C(el.dataset.id);reply(c,el.dataset.v,tick());render()},
+  pickMsg:el=>{UI.msgC=el.dataset.id;render()},
+  gotoMsg:el=>{UI.msgC=el.dataset.id;closeDrawer();render()},
+  gotoCand:el=>{UI.candC=el.dataset.id;closeDrawer();render()},
+  candReq:el=>{if(!need())return;const c=C(el.dataset.id);const t=tick();const type=el.dataset.v;
+    if(type==='access'){addRequest(c,'access',t,'',true);modal('Data copy shown to the candidate','This is what the candidate sees and can save. The request is logged as served.',JSON.stringify({you_applied_for:R(c.req).title,received:iso(c.receivedAt),your_answers:{shifts:c.ans.shifts,start_in_days:c.ans.startDays,certificates:c.ans.cert,site_language:c.ans.lang},experience_you_wrote:c.exp.text,how_it_was_scored:c.br.map(b=>({criterion:b.label,points:Math.round(b.credit*b.w),of:b.w,why:b.ev})),decision:c.decision?{outcome:c.decision.outcome,by:c.decision.by==='agent'?'a fixed rule':'a recruiter',on:fmtD(c.decision.at)}:'not decided yet',messages:c.thread.map(m=>({at:iso(m.t),from:m.d==='out'?'us':'you',text:m.text})),kept_until:c.retainUntil?fmtD(c.retainUntil):'decided later'},null,2));render();return}
+    const txt=type==='human_review'?'Please have a person look at my application again.':'Please delete my data.';
+    addRequest(c,type,t,txt);render();toast(type==='human_review'?'Review requested. It is now in the recruiter queue.':'Deletion request sent to the team.')},
+  fairModel:el=>{UI.fairModel=el.dataset.id;render()},
+  record:el=>{const c=C(el.dataset.id);modal(`Decision record ${'DR-'+c.id.slice(2)}`,'Everything used to reach this outcome, who made each decision, and what the candidate was told.',JSON.stringify(decisionRecord(c),null,2))},
+  pack:()=>{modal('Auditor pack',`Built ${fmtT(S.now)} from live records. Copy it into the audit file.`,JSON.stringify(auditorPack(),null,2))},
+  csv:()=>{modal('Decision log',`${S.log.length} events, oldest first.`,csv())},
+  copy:()=>{const ta=$('#mtext');const done=()=>{$('#copymsg').textContent='Copied'};try{navigator.clipboard.writeText(ta.value).then(done,()=>{ta.focus();ta.select();$('#copymsg').textContent='Selected. Press Ctrl+C or Cmd+C.'})}catch(e){ta.focus();ta.select();$('#copymsg').textContent='Selected. Press Ctrl+C or Cmd+C.'}},
+  intake:()=>{if(!need())return;const t0=S.now;let n=0;for(let i=0;i<10;i++){const r=pick(S.reqs);newCandidate(r,rand,t0+i*25e3);n++}S.now=t0+10*25e3+3*MIN;render();const L=S.cands.slice(-10);toast(`10 applications screened. ${L.filter(c=>c.status==='invited').length} invited, ${L.filter(c=>c.status==='review').length} to recruiters, ${L.filter(c=>c.status==='correction').length} asked to confirm an answer.`)},
+  advance24:()=>{if(!need())return;
+    const from=S.now,to=S.now+24*H;let closed=0,booked=0,held=0;
+    S.cands.forEach(c=>{
+      if(c.status==='correction'&&c.windowEnds<=to){closeWindow(c,c.windowEnds);if(c.status==='rejected')closed++;else held++}
+      if(c.status==='invited'&&!c.optedOut&&rand()<0.55){reply(c,String(1+Math.floor(rand()*Math.min(3,c.offered.length))),from+(1+rand()*20)*H);if(c.status==='booked')booked++}
+      interviewFollowUp(c,to,from);
+    });
+    S.now=to;
+    const nn=6+Math.floor(rand()*6);for(let i=0;i<nn;i++)newCandidate(pick(S.reqs),rand,to-Math.floor(rand()*20*H));
+    render();toast(`One day later: ${nn} new applications, ${booked} interviews booked, ${closed} closed by rule, ${held} held for a person.`)},
+  askReset:()=>modal('Reset workspace','Restore the sample data and clear everything done in this browser. <div class="row-actions" style="margin-top:12px"><button class="btn btn-bad" data-act="doReset">Reset</button><button class="btn" data-act="closeModal">Keep my changes</button></div>',null),
+  doReset:()=>{try{localStorage.removeItem(STORE)}catch(e){}seed();UI.sel.clear();UI.draft=null;UI.msgC=null;UI.candC=null;closeModal();closeDrawer();render();toast('Workspace reset to sample data.')}
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=ACT[el.dataset.act];if(!f)return;if(el.tagName!=='A')e.preventDefault();f(el,e)});
+document.addEventListener('input',e=>{
+  const el=e.target;const k=el.dataset&&el.dataset.in;if(!k)return;
+  const rerender=()=>{const id=el.id;const pos=el.selectionStart;render();const n=document.getElementById(id);if(n){n.focus();try{if(pos!=null&&n.setSelectionRange)n.setSelectionRange(pos,pos)}catch(x){}}};
+  switch(k){
+    case 'weight':UI.draft.criteria[+el.dataset.i].w=+el.value;el.nextElementSibling.textContent=el.value;break;
+    case 'thr':UI.draft.threshold=+el.value;el.nextElementSibling.textContent=el.value;break;
+    case 'note':UI.draft.note=el.value;rerender();break;
+    case 'fQ':UI.q=el.value;rerender();break;
+    case 'aQ':UI.auditF.q=el.value;rerender();break;
+  }
+});
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(el.id==='who'){S.user=el.value;closeDrawer();render();toast(`Signed in as ${me().name}`);return}
+  const k=el.dataset&&el.dataset.in;if(!k)return;
+  switch(k){
+    case 'weight':case 'thr':render();break;
+    case 'ko':UI.draft.knockouts[+el.dataset.i].on=el.checked;render();break;
+    case 'hm':UI.draft.hm=el.checked;render();break;
+    case 'fReq':UI.req=el.value;render();break;
+    case 'fBand':UI.band=el.value;render();break;
+    case 'fStatus':UI.status=el.value;render();break;
+    case 'mReq':UI.msgReq=el.value;UI.msgC=null;render();break;
+    case 'candPick':UI.candC=el.value;render();break;
+    case 'aCo':UI.auditF.co=el.value;render();break;
+    case 'aActor':UI.auditF.actor=el.value;render();break;
+    case 'sel':if(el.checked)UI.sel.add(el.dataset.id);else UI.sel.delete(el.dataset.id);render();break;
+    case 'selAll':S.cands.filter(c=>c.status==='review').forEach(c=>el.checked?UI.sel.add(c.id):UI.sel.delete(c.id));render();break;
+    case 'pol':{if(!isAdmin()){render();return}const p=S.policy[el.dataset.co];p[el.dataset.k]=el.checked;log(tick(),null,'Country rule changed','human',me().name,`${COUNTRY[el.dataset.co]}: ${el.dataset.k==='autoInvite'?'automatic invitations':'closing failed requirements'} turned ${el.checked?'on':'off'}.`,{});render();toast('Rule updated and logged.');break}
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDrawer()}});
+window.addEventListener('hashchange',()=>{closeDrawer();render();window.scrollTo(0,0)});
+
+S=load();
+if(!S)seed();
+render();
+})();
+</script>
+
+</body>
+</html>
